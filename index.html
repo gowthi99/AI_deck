@@ -8,6 +8,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Razorpay Checkout Script -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     
     <style>
         /* Custom Animations & Scrollbar */
@@ -29,7 +31,7 @@
             100% { background-position: 0% 50%; }
         }
         
-        /* Custom Scrollbar for expanded prompts */
+        /* Custom Scrollbar */
         .custom-scrollbar::-webkit-scrollbar {
             width: 8px;
         }
@@ -45,7 +47,6 @@
             background: #475569; 
         }
 
-        /* Utility for content height transition */
         .transition-max-height {
             transition: max-height 0.5s ease-in-out;
         }
@@ -68,195 +69,219 @@
     <nav class="fixed w-full z-50 bg-slate-950/80 backdrop-blur-md border-b border-slate-800 transition-all duration-300">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
-                <div class="flex items-center gap-2 group cursor-pointer">
+                <div class="flex items-center gap-2 group cursor-pointer" onclick="location.reload()">
                     <i data-lucide="sparkles" class="h-6 w-6 text-purple-400 group-hover:rotate-12 transition-transform duration-300"></i>
                     <span class="font-bold text-xl tracking-tight bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
                         PromptMagic
                     </span>
                 </div>
-                <button onclick="scrollToSubscribe()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-full text-sm font-medium transition-all shadow-[0_0_15px_rgba(147,51,234,0.3)] hover:shadow-[0_0_25px_rgba(147,51,234,0.5)] hover:scale-105 active:scale-95">
-                    Get Access
-                </button>
+                <div id="nav-actions">
+                    <button onclick="scrollToSubscribe()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-full text-sm font-medium transition-all shadow-[0_0_15px_rgba(147,51,234,0.3)] hover:shadow-[0_0_25px_rgba(147,51,234,0.5)] hover:scale-105 active:scale-95">
+                        Get Access
+                    </button>
+                </div>
             </div>
         </div>
     </nav>
 
-    <!-- Hero Section -->
-    <header class="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
-        <!-- Animated Background Blobs -->
-        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl pointer-events-none">
-            <div class="absolute top-20 left-10 w-72 h-72 bg-purple-500/20 rounded-full blur-[100px] animate-pulse"></div>
-            <div class="absolute bottom-20 right-10 w-96 h-96 bg-blue-500/10 rounded-full blur-[100px] animate-pulse" style="animation-delay: 1s;"></div>
-            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-pink-500/5 rounded-full blur-[120px] animate-pulse" style="animation-delay: 2s;"></div>
-        </div>
-        
-        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900 border border-slate-700 text-purple-300 text-xs font-semibold mb-6 uppercase tracking-wider hover:border-purple-500/50 transition-colors cursor-default animate-fade-in-up">
-                <span class="relative flex h-2 w-2">
-                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
-                    <span class="relative inline-flex rounded-full h-2 w-2 bg-purple-500"></span>
-                </span>
-                Updated Weekly
-            </div>
-            <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight mb-8 animate-fade-in-up" style="animation-delay: 0.1s;">
-                Unlock the <span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 animate-gradient-x">Hidden Potential</span> of GPT
-            </h1>
-            <p class="max-w-2xl mx-auto text-xl text-slate-400 mb-10 leading-relaxed animate-fade-in-up" style="animation-delay: 0.2s;">
-                Stop using average prompts. Access our curated library of "Out of the Box" magical prompts designed to supercharge your workflow.
-            </p>
-            <div class="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fade-in-up" style="animation-delay: 0.3s;">
-                <button onclick="scrollToSubscribe()" class="w-full sm:w-auto px-8 py-4 bg-white text-slate-900 rounded-xl font-bold text-lg hover:bg-slate-100 transition-all hover:scale-105 active:scale-95 shadow-lg shadow-white/10">
-                    Start for ₹9/mo
-                </button>
-                <button onclick="document.getElementById('demo-section').scrollIntoView({behavior: 'smooth'})" class="w-full sm:w-auto px-8 py-4 bg-slate-800 text-white rounded-xl font-bold text-lg hover:bg-slate-700 transition-all hover:scale-105 active:scale-95 border border-slate-700 hover:border-slate-500">
-                    View Demo Prompts
-                </button>
-            </div>
-        </div>
-    </header>
-
-    <!-- Demo Section -->
-    <section id="demo-section" class="py-20 bg-slate-900/50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center gap-2 mb-10">
-                <i data-lucide="unlock" class="text-green-400 h-6 w-6 animate-bounce"></i>
-                <h2 class="text-3xl font-bold">Free Demo Prompts</h2>
+    <!-- LANDING PAGE VIEW -->
+    <div id="landing-view">
+        <!-- Hero Section -->
+        <header class="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
+            <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl pointer-events-none">
+                <div class="absolute top-20 left-10 w-72 h-72 bg-purple-500/20 rounded-full blur-[100px] animate-pulse"></div>
+                <div class="absolute bottom-20 right-10 w-96 h-96 bg-blue-500/10 rounded-full blur-[100px] animate-pulse" style="animation-delay: 1s;"></div>
+                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-pink-500/5 rounded-full blur-[120px] animate-pulse" style="animation-delay: 2s;"></div>
             </div>
             
-            <div id="demo-container" class="grid md:grid-cols-2 gap-6">
-                <!-- JS will render cards here -->
-            </div>
-        </div>
-    </section>
-
-    <!-- Locked Section -->
-    <section class="py-20 relative">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between mb-10">
-                <div class="flex items-center gap-2">
-                    <i data-lucide="lock" class="text-purple-400 h-6 w-6"></i>
-                    <h2 class="text-3xl font-bold">Premium Magical Prompts</h2>
+            <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900 border border-slate-700 text-purple-300 text-xs font-semibold mb-6 uppercase tracking-wider hover:border-purple-500/50 transition-colors cursor-default animate-fade-in-up">
+                    <span class="relative flex h-2 w-2">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-purple-500"></span>
+                    </span>
+                    Updated Weekly
                 </div>
-                <span class="text-sm text-slate-400 bg-slate-900 px-3 py-1 rounded-full border border-slate-800">100+ Prompts Locked</span>
+                <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight mb-8 animate-fade-in-up" style="animation-delay: 0.1s;">
+                    Unlock the <span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 animate-gradient-x">Hidden Potential</span> of GPT
+                </h1>
+                <p class="max-w-2xl mx-auto text-xl text-slate-400 mb-10 leading-relaxed animate-fade-in-up" style="animation-delay: 0.2s;">
+                    Stop using average prompts. Access our curated library of "Out of the Box" magical prompts designed to supercharge your workflow.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fade-in-up" style="animation-delay: 0.3s;">
+                    <button onclick="scrollToSubscribe()" class="w-full sm:w-auto px-8 py-4 bg-white text-slate-900 rounded-xl font-bold text-lg hover:bg-slate-100 transition-all hover:scale-105 active:scale-95 shadow-lg shadow-white/10">
+                        Start for ₹9/mo
+                    </button>
+                    <button onclick="document.getElementById('demo-section').scrollIntoView({behavior: 'smooth'})" class="w-full sm:w-auto px-8 py-4 bg-slate-800 text-white rounded-xl font-bold text-lg hover:bg-slate-700 transition-all hover:scale-105 active:scale-95 border border-slate-700 hover:border-slate-500">
+                        View Demo Prompts
+                    </button>
+                </div>
             </div>
+        </header>
 
-            <div id="locked-container" class="grid md:grid-cols-3 gap-6">
-                <!-- JS will render locked cards here -->
+        <!-- Demo Section -->
+        <section id="demo-section" class="py-20 bg-slate-900/50">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center gap-2 mb-10">
+                    <i data-lucide="unlock" class="text-green-400 h-6 w-6 animate-bounce"></i>
+                    <h2 class="text-3xl font-bold">Free Demo Prompts</h2>
+                </div>
+                
+                <div id="demo-container" class="grid md:grid-cols-2 gap-6">
+                    <!-- JS will render cards here -->
+                </div>
             </div>
-            
-            <div class="mt-12 text-center">
-                <p class="text-slate-400 mb-4 animate-pulse">...and hundreds more added weekly.</p>
-                <button onclick="scrollToSubscribe()" class="text-purple-400 hover:text-purple-300 font-medium flex items-center justify-center gap-2 mx-auto hover:underline decoration-2 underline-offset-4 transition-all">
-                    See plans <i data-lucide="zap" class="w-4 h-4 fill-purple-400"></i>
-                </button>
-            </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- Pricing Section -->
-    <section id="pricing" class="py-24 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl font-bold mb-4">Simple, Tiny Pricing</h2>
-                <p class="text-slate-400 max-w-xl mx-auto">
-                    We keep it affordable so everyone can access the power of advanced AI. Delivered straight to your inbox.
+        <!-- Locked Section -->
+        <section class="py-20 relative">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between mb-10">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="lock" class="text-purple-400 h-6 w-6"></i>
+                        <h2 class="text-3xl font-bold">Premium Magical Prompts</h2>
+                    </div>
+                    <span class="text-sm text-slate-400 bg-slate-900 px-3 py-1 rounded-full border border-slate-800">100+ Prompts Locked</span>
+                </div>
+
+                <div id="locked-preview-container" class="grid md:grid-cols-3 gap-6">
+                    <!-- JS will render locked cards here -->
+                </div>
+                
+                <div class="mt-12 text-center">
+                    <p class="text-slate-400 mb-4 animate-pulse">...and hundreds more added weekly.</p>
+                    <button onclick="scrollToSubscribe()" class="text-purple-400 hover:text-purple-300 font-medium flex items-center justify-center gap-2 mx-auto hover:underline decoration-2 underline-offset-4 transition-all">
+                        See plans <i data-lucide="zap" class="w-4 h-4 fill-purple-400"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pricing Section -->
+        <section id="pricing" class="py-24 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-16">
+                    <h2 class="text-4xl font-bold mb-4">Simple, Tiny Pricing</h2>
+                    <p class="text-slate-400 max-w-xl mx-auto">
+                        We keep it affordable so everyone can access the power of advanced AI. Delivered straight to your inbox.
+                    </p>
+                </div>
+
+                <div class="grid md:grid-cols-4 gap-6 max-w-6xl mx-auto">
+                    <!-- Monthly -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col hover:border-slate-600 transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
+                        <h3 class="text-lg font-medium text-slate-300 mb-2">Monthly</h3>
+                        <div class="mb-4">
+                            <span class="text-4xl font-bold text-white">₹9</span>
+                            <span class="text-slate-500">/mo</span>
+                        </div>
+                        <p class="text-sm text-slate-400 mb-6">Perfect for trying it out.</p>
+                        <ul class="space-y-3 mb-8 flex-1">
+                            <li class="flex items-center gap-2 text-sm text-slate-300"><i data-lucide="check" class="w-4 h-4 text-purple-400"></i> Weekly Inbox Updates</li>
+                            <li class="flex items-center gap-2 text-sm text-slate-300"><i data-lucide="check" class="w-4 h-4 text-purple-400"></i> Full Prompt Library</li>
+                        </ul>
+                        <button onclick="handleSubscribe('monthly')" class="w-full py-3 rounded-xl border border-purple-500 text-purple-400 font-bold hover:bg-purple-500/10 transition-colors">
+                            Subscribe Monthly
+                        </button>
+                    </div>
+
+                    <!-- Quarterly -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col relative overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-xl hover:border-blue-500/30">
+                        <div class="absolute top-0 right-0 bg-blue-600 text-xs px-2 py-1 rounded-bl-lg font-bold shadow-lg">SAVE 11%</div>
+                        <h3 class="text-lg font-medium text-slate-300 mb-2">Quarterly</h3>
+                        <div class="mb-1">
+                            <span class="text-4xl font-bold text-white">₹24</span>
+                            <span class="text-slate-500">/3mo</span>
+                        </div>
+                        <div class="text-xs text-slate-500 line-through mb-4">was ₹27</div>
+                        <ul class="space-y-3 mb-8 flex-1">
+                            <li class="flex items-center gap-2 text-sm text-slate-300"><i data-lucide="check" class="w-4 h-4 text-blue-400"></i> All Monthly Perks</li>
+                            <li class="flex items-center gap-2 text-sm text-slate-300"><i data-lucide="check" class="w-4 h-4 text-blue-400"></i> Priority Support</li>
+                        </ul>
+                        <button onclick="handleSubscribe('quarterly')" class="w-full py-3 rounded-xl bg-slate-800 text-white font-bold hover:bg-slate-700 transition-colors">
+                            Get Quarterly
+                        </button>
+                    </div>
+
+                    <!-- Yearly -->
+                    <div class="bg-slate-900 border-2 border-purple-500 rounded-2xl p-6 flex flex-col relative transform md:-translate-y-4 shadow-[0_0_40px_rgba(168,85,247,0.15)] transition-all duration-300 hover:-translate-y-6 hover:shadow-[0_0_60px_rgba(168,85,247,0.25)]">
+                        <div class="absolute top-0 right-0 left-0 bg-purple-600 text-center text-xs py-1 font-bold uppercase tracking-wider">Most Popular</div>
+                        <h3 class="text-lg font-medium text-purple-300 mb-2 mt-4">Yearly</h3>
+                        <div class="mb-1">
+                            <span class="text-4xl font-bold text-white">₹79</span>
+                            <span class="text-slate-500">/yr</span>
+                        </div>
+                        <div class="text-xs text-slate-500 line-through mb-4">was ₹108</div>
+                        <ul class="space-y-3 mb-8 flex-1">
+                            <li class="flex items-center gap-2 text-sm text-white"><i data-lucide="star" class="w-4 h-4 text-yellow-400 fill-yellow-400"></i> <span class="font-bold text-green-400">Save 27%</span></li>
+                            <li class="flex items-center gap-2 text-sm text-slate-300"><i data-lucide="check" class="w-4 h-4 text-purple-400"></i> 52 Weeks of Prompts</li>
+                            <li class="flex items-center gap-2 text-sm text-slate-300"><i data-lucide="check" class="w-4 h-4 text-purple-400"></i> Exclusive E-book</li>
+                        </ul>
+                        <button onclick="handleSubscribe('yearly')" class="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold hover:opacity-90 transition-opacity shadow-lg">
+                            Subscribe Yearly
+                        </button>
+                    </div>
+
+                    <!-- Half-Yearly -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col transition-all duration-300 hover:-translate-y-2 hover:shadow-xl hover:border-green-500/30">
+                        <div class="absolute top-0 right-0 bg-green-600 text-xs px-2 py-1 rounded-bl-lg font-bold shadow-lg">SAVE 16%</div>
+                        <h3 class="text-lg font-medium text-slate-300 mb-2">Half-Yearly</h3>
+                        <div class="mb-1">
+                            <span class="text-4xl font-bold text-white">₹45</span>
+                            <span class="text-slate-500">/6mo</span>
+                        </div>
+                        <div class="text-xs text-slate-500 line-through mb-4">was ₹54</div>
+                        <ul class="space-y-3 mb-8 flex-1">
+                            <li class="flex items-center gap-2 text-sm text-slate-300"><i data-lucide="check" class="w-4 h-4 text-green-400"></i> All Monthly Perks</li>
+                            <li class="flex items-center gap-2 text-sm text-slate-300"><i data-lucide="check" class="w-4 h-4 text-green-400"></i> Locked Price Rate</li>
+                        </ul>
+                        <button onclick="handleSubscribe('halfYearly')" class="w-full py-3 rounded-xl bg-slate-800 text-white font-bold hover:bg-slate-700 transition-colors">
+                            Get Half-Yearly
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAQ Section -->
+        <section class="py-24 bg-slate-950 relative overflow-hidden">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                <div class="text-center mb-16">
+                    <h2 class="text-4xl font-bold mb-4">Frequently Asked Questions</h2>
+                    <p class="text-slate-400">Everything you need to know about the service.</p>
+                </div>
+                
+                <div id="faq-container" class="bg-slate-900/50 border border-slate-800 rounded-3xl p-8 backdrop-blur-sm">
+                    <!-- JS will render FAQs here -->
+                </div>
+            </div>
+            <div class="absolute top-1/2 left-0 -translate-y-1/2 w-96 h-96 bg-purple-500/5 rounded-full blur-[100px] pointer-events-none"></div>
+        </section>
+    </div>
+
+    <!-- PREMIUM DASHBOARD VIEW (Hidden by default) -->
+    <div id="premium-view" class="hidden min-h-screen bg-slate-950">
+        <div class="relative pt-24 pb-12 bg-gradient-to-b from-purple-900/20 to-slate-950">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 text-xs font-bold mb-6 uppercase tracking-wider">
+                    <i data-lucide="crown" class="w-3.5 h-3.5"></i> Premium Member
+                </span>
+                <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-white">
+                    Welcome to the <span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">Magical Library</span>
+                </h1>
+                <p class="max-w-2xl mx-auto text-lg text-slate-400">
+                    You now have full access. Explore, copy, and create magic.
                 </p>
             </div>
+        </div>
 
-            <div class="grid md:grid-cols-4 gap-6 max-w-6xl mx-auto">
-                
-                <!-- Monthly -->
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col hover:border-slate-600 transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
-                    <h3 class="text-lg font-medium text-slate-300 mb-2">Monthly</h3>
-                    <div class="mb-4">
-                        <span class="text-4xl font-bold text-white">₹9</span>
-                        <span class="text-slate-500">/mo</span>
-                    </div>
-                    <p class="text-sm text-slate-400 mb-6">Perfect for trying it out.</p>
-                    <ul class="space-y-3 mb-8 flex-1">
-                        <li class="flex items-center gap-2 text-sm text-slate-300"><i data-lucide="check" class="w-4 h-4 text-purple-400"></i> Weekly Inbox Updates</li>
-                        <li class="flex items-center gap-2 text-sm text-slate-300"><i data-lucide="check" class="w-4 h-4 text-purple-400"></i> Full Prompt Library</li>
-                    </ul>
-                    <button onclick="handleSubscribe('monthly')" class="w-full py-3 rounded-xl border border-purple-500 text-purple-400 font-bold hover:bg-purple-500/10 transition-colors">
-                        Subscribe Monthly
-                    </button>
-                </div>
-
-                <!-- Quarterly -->
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col relative overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-xl hover:border-blue-500/30">
-                    <div class="absolute top-0 right-0 bg-blue-600 text-xs px-2 py-1 rounded-bl-lg font-bold shadow-lg">SAVE 11%</div>
-                    <h3 class="text-lg font-medium text-slate-300 mb-2">Quarterly</h3>
-                    <div class="mb-1">
-                        <span class="text-4xl font-bold text-white">₹24</span>
-                        <span class="text-slate-500">/3mo</span>
-                    </div>
-                    <div class="text-xs text-slate-500 line-through mb-4">was ₹27</div>
-                    <ul class="space-y-3 mb-8 flex-1">
-                        <li class="flex items-center gap-2 text-sm text-slate-300"><i data-lucide="check" class="w-4 h-4 text-blue-400"></i> All Monthly Perks</li>
-                        <li class="flex items-center gap-2 text-sm text-slate-300"><i data-lucide="check" class="w-4 h-4 text-blue-400"></i> Priority Support</li>
-                    </ul>
-                    <button onclick="handleSubscribe('quarterly')" class="w-full py-3 rounded-xl bg-slate-800 text-white font-bold hover:bg-slate-700 transition-colors">
-                        Get Quarterly
-                    </button>
-                </div>
-
-                <!-- Yearly -->
-                <div class="bg-slate-900 border-2 border-purple-500 rounded-2xl p-6 flex flex-col relative transform md:-translate-y-4 shadow-[0_0_40px_rgba(168,85,247,0.15)] transition-all duration-300 hover:-translate-y-6 hover:shadow-[0_0_60px_rgba(168,85,247,0.25)]">
-                    <div class="absolute top-0 right-0 left-0 bg-purple-600 text-center text-xs py-1 font-bold uppercase tracking-wider">Most Popular</div>
-                    <h3 class="text-lg font-medium text-purple-300 mb-2 mt-4">Yearly</h3>
-                    <div class="mb-1">
-                        <span class="text-4xl font-bold text-white">₹79</span>
-                        <span class="text-slate-500">/yr</span>
-                    </div>
-                    <div class="text-xs text-slate-500 line-through mb-4">was ₹108</div>
-                    <ul class="space-y-3 mb-8 flex-1">
-                        <li class="flex items-center gap-2 text-sm text-white"><i data-lucide="star" class="w-4 h-4 text-yellow-400 fill-yellow-400"></i> <span class="font-bold text-green-400">Save 27%</span></li>
-                        <li class="flex items-center gap-2 text-sm text-slate-300"><i data-lucide="check" class="w-4 h-4 text-purple-400"></i> 52 Weeks of Prompts</li>
-                        <li class="flex items-center gap-2 text-sm text-slate-300"><i data-lucide="check" class="w-4 h-4 text-purple-400"></i> Exclusive E-book</li>
-                    </ul>
-                    <button onclick="handleSubscribe('yearly')" class="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold hover:opacity-90 transition-opacity shadow-lg">
-                        Subscribe Yearly
-                    </button>
-                </div>
-
-                <!-- Half-Yearly -->
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col transition-all duration-300 hover:-translate-y-2 hover:shadow-xl hover:border-green-500/30">
-                    <div class="absolute top-0 right-0 bg-green-600 text-xs px-2 py-1 rounded-bl-lg font-bold shadow-lg">SAVE 16%</div>
-                    <h3 class="text-lg font-medium text-slate-300 mb-2">Half-Yearly</h3>
-                    <div class="mb-1">
-                        <span class="text-4xl font-bold text-white">₹45</span>
-                        <span class="text-slate-500">/6mo</span>
-                    </div>
-                    <div class="text-xs text-slate-500 line-through mb-4">was ₹54</div>
-                    <ul class="space-y-3 mb-8 flex-1">
-                        <li class="flex items-center gap-2 text-sm text-slate-300"><i data-lucide="check" class="w-4 h-4 text-green-400"></i> All Monthly Perks</li>
-                        <li class="flex items-center gap-2 text-sm text-slate-300"><i data-lucide="check" class="w-4 h-4 text-green-400"></i> Locked Price Rate</li>
-                    </ul>
-                    <button onclick="handleSubscribe('halfYearly')" class="w-full py-3 rounded-xl bg-slate-800 text-white font-bold hover:bg-slate-700 transition-colors">
-                        Get Half-Yearly
-                    </button>
-                </div>
-
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <!-- Filter / Search could go here -->
+            <div id="premium-container" class="grid md:grid-cols-2 lg:grid-cols-2 gap-6">
+                <!-- JS will render UNLOCKED cards here -->
             </div>
         </div>
-    </section>
-
-    <!-- FAQ Section -->
-    <section class="py-24 bg-slate-950 relative overflow-hidden">
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl font-bold mb-4">Frequently Asked Questions</h2>
-                <p class="text-slate-400">Everything you need to know about the service.</p>
-            </div>
-            
-            <div id="faq-container" class="bg-slate-900/50 border border-slate-800 rounded-3xl p-8 backdrop-blur-sm">
-                <!-- JS will render FAQs here -->
-            </div>
-        </div>
-        
-        <!-- Decorative background element for FAQ -->
-        <div class="absolute top-1/2 left-0 -translate-y-1/2 w-96 h-96 bg-purple-500/5 rounded-full blur-[100px] pointer-events-none"></div>
-    </section>
+    </div>
 
     <!-- Footer -->
     <footer class="bg-slate-950 border-t border-slate-900 pt-16 pb-8">
@@ -268,43 +293,36 @@
                         <span class="font-bold text-lg text-white">PromptMagic</span>
                     </div>
                     <p class="text-slate-500 text-sm">
-                        Unlocking the true potential of AI, one prompt at a time. Join thousands of users working smarter, not harder.
+                        Unlocking the true potential of AI, one prompt at a time.
                     </p>
                 </div>
                 <div>
-                    <h4 class="font-bold text-white mb-4">Features</h4>
+                    <h4 class="font-bold text-white mb-4">Resources</h4>
                     <ul class="space-y-2 text-sm text-slate-500">
-                        <li class="flex items-center gap-2 hover:text-purple-400 transition-colors cursor-default"><i data-lucide="mail" class="w-3.5 h-3.5"></i> Weekly Inbox Delivery</li>
-                        <li class="flex items-center gap-2 hover:text-purple-400 transition-colors cursor-default"><i data-lucide="shield" class="w-3.5 h-3.5"></i> Cancel Anytime</li>
-                        <li class="flex items-center gap-2 hover:text-purple-400 transition-colors cursor-default"><i data-lucide="zap" class="w-3.5 h-3.5"></i> Instant Access</li>
+                        <li><a href="#" class="hover:text-purple-400">Documentation</a></li>
+                        <li><a href="#" class="hover:text-purple-400">Blog</a></li>
                     </ul>
                 </div>
                 <div>
-                    <h4 class="font-bold text-white mb-4">Newsletter</h4>
-                    <p class="text-slate-500 text-sm mb-4">Get a free prompt every month.</p>
-                    <div class="flex gap-2">
-                        <input type="email" placeholder="Enter email" class="bg-slate-900 border border-slate-800 rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:border-purple-500 w-full transition-colors" />
-                        <button class="bg-purple-600 px-4 py-2 rounded-lg text-white text-sm font-bold hover:bg-purple-500 hover:scale-105 active:scale-95 transition-all">Join</button>
-                    </div>
+                    <h4 class="font-bold text-white mb-4">Contact</h4>
+                    <p class="text-slate-500 text-sm">support@promptmagic.com</p>
                 </div>
             </div>
-            <div class="border-t border-slate-900 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-slate-600">
+            <div class="border-t border-slate-900 pt-8 text-center text-xs text-slate-600">
                 <p>&copy; 2024 PromptMagic. All rights reserved.</p>
-                <div class="flex gap-4 mt-4 md:mt-0">
-                    <a href="#" class="hover:text-slate-400 transition-colors">Privacy Policy</a>
-                    <a href="#" class="hover:text-slate-400 transition-colors">Terms of Service</a>
-                </div>
             </div>
         </div>
     </footer>
 
     <script>
         // --- Data ---
-        const paymentLinks = {
-            monthly: "https://razorpay.com/payment-link/placeholder-monthly", 
-            quarterly: "https://razorpay.com/payment-link/placeholder-quarterly",
-            yearly: "https://razorpay.com/payment-link/placeholder-yearly",
-            halfYearly: "https://razorpay.com/payment-link/placeholder-halfyearly"
+        const RAZORPAY_KEY_ID = "rzp_live_RxurtAbdBgdQwN"; 
+
+        const plans = {
+            monthly: { amount: 900, name: "Monthly Plan", description: "Access to Magical Prompts for 1 Month" },
+            quarterly: { amount: 2400, name: "Quarterly Plan", description: "Access to Magical Prompts for 3 Months" },
+            yearly: { amount: 7900, name: "Yearly Plan", description: "Access to Magical Prompts for 1 Year" },
+            halfYearly: { amount: 4500, name: "Half-Yearly Plan", description: "Access to Magical Prompts for 6 Months" }
         };
 
         const demoPrompts = [
@@ -312,63 +330,27 @@
                 title: "The Socratic Tutor",
                 category: "Education",
                 content: `Act as a Socratic Tutor. You must never provide the answer immediately. Instead, your goal is to guide me to the answer by asking probing, thought-provoking questions.
-      
-Rules:
-1. Start by asking me what topic I want to explore.
-2. Gauge my current understanding of the topic with an initial question.
-3. Break down the problem into smaller, manageable parts.
-4. If I make a mistake, gently guide me back with a question that highlights the error in logic (e.g., "If that were true, what would imply about X?").
-5. Praise critical thinking and logical steps, not just correct answers.
-6. Adapt your vocabulary and complexity to my level of knowledge.
-
-Your goal is to foster independent thinking and deep understanding, not to be a search engine. Start by asking: "What would you like to learn today?"`
+Start by asking: "What would you like to learn today?"`
             },
             {
                 title: "The ELI5 Expert",
                 category: "Explanation",
-                content: `You are the Universal Simplifier. Your task is to explain complex topics to me as if I am a 5-year-old (ELI5).
-
-Guidelines:
-- Use simple language (basic vocabulary only).
-- Use analogies involving everyday objects, animals, toys, or playground scenarios (e.g., "Think of the internet like a giant web of strings connecting tin can phones").
-- Avoid all jargon. If a technical term is unavoidable, explain it immediately with a metaphor.
-- Keep sentences short and punchy.
-- Start with a 'Hook' to grab attention (e.g., "Imagine you have a big box of Lego...").
-- Check for understanding at the end by asking a simple fun question.
-
-Please ask me: "What complex topic is confusing you right now?"`
+                content: `You are the Universal Simplifier. Your task is to explain complex topics to me as if I am a 5-year-old (ELI5). Use analogies involving everyday objects or animals.`
             },
             {
                 title: "The Devil's Advocate",
                 category: "Critical Thinking",
-                content: `Act as a skilled Debater and Devil's Advocate. I will present an opinion, argument, or idea. Your task is to rigorously critique it to help me strengthen my views.
-
-Process:
-1. Steelman my argument first: Restate it in its strongest possible form to show you understand.
-2. Identify logical fallacies (ad hominem, strawman, sunk cost, appeal to authority, etc.).
-3. Highlight potential biases (confirmation bias, survivorship bias).
-4. Offer 3 distinct, strong counter-arguments backed by logic or potential evidence.
-5. Conclude with a 'Synthesis' question that challenges me to reconcile my view with your critique.
-
-Please start by asking me to state my controversial opinion.`
+                content: `Act as a skilled Debater. I will present an opinion. Your task is to rigorously critique it to help me strengthen my views.`
             },
             {
                 title: "The Python Bug Hunter",
                 category: "Coding",
-                content: `Act as a Senior Python Backend Engineer and Code Reviewer. I will provide a code snippet. You must perform a deep analysis:
-
-1. **Analyze**: Walk through the code execution step-by-step in natural language.
-2. **Identify Bugs**: Point out syntax errors, logical errors, or race conditions.
-3. **Performance Check**: Highlight O(n^2) operations, memory leaks, or unoptimized database queries.
-4. **Security Audit**: Highlight SQL injection risks, input validation issues, or insecure dependencies.
-5. **Refactor**: Provide the corrected, optimized, and PEP8 compliant code.
-6. **Explain**: Explain *why* the fix works and how to prevent this in the future.
-
-Please ask me to paste my Python code snippet.`
+                content: `Act as a Senior Python Backend Engineer. Analyze my code snippet for bugs, performance issues, and security risks.`
             }
         ];
 
-        const lockedPrompts = [
+        // We use this array for the Landing Page "Locked" view (titles only)
+        const lockedTitles = [
             { title: "The Ultimate Copywriting Framework", category: "Marketing" },
             { title: "Full-Stack Code Refactor Wizard", category: "Coding" },
             { title: "Viral Thread Generator", category: "Social Media" },
@@ -377,7 +359,117 @@ Please ask me to paste my Python code snippet.`
             { title: "Complex Legal Document Simplifier", category: "Legal" },
             { title: "The 'First Principles' Thinker", category: "Strategy" },
             { title: "SEO Keyword Dominator", category: "Marketing" },
-            { title: "Recipe Reverse Engineer", category: "Lifestyle" },
+            { title: "Recipe Reverse Engineer", category: "Lifestyle" }
+        ];
+
+        // Full Content for Premium View (Unlocked)
+        const premiumPrompts = [
+            {
+                title: "The Ultimate Copywriting Framework",
+                category: "Marketing",
+                content: `Act as a Senior Direct Response Copywriter. I want you to write a [Sales Page / Email Sequence / Ad] for [Product Name].
+                
+Use the 'PAS' (Problem-Agitate-Solution) framework combined with 'AIDA' (Attention-Interest-Desire-Action).
+1. **Headline**: Write 5 variations that use curiosity gaps.
+2. **Problem**: Viscerally describe the pain point the user feels right now.
+3. **Agitate**: Make the problem feel urgent and expensive to ignore.
+4. **Solution**: Introduce the product as the only logical solution.
+5. **Bullets**: Write 5 bullets that focus on benefits (outcomes), not features.
+6. **Close**: A strong call to action with urgency.
+
+Ask me for the product details to get started.`
+            },
+            {
+                title: "Full-Stack Code Refactor Wizard",
+                category: "Coding",
+                content: `You are a 10x Engineer and Architect. I will provide a block of code (Legacy). Your goal is to Modernize it.
+                
+1. **Smell Test**: Identify anti-patterns (God classes, magic numbers, callback hell).
+2. **Refactor**: Rewrite the code using modern syntax (e.g., async/await, arrow functions, composition over inheritance).
+3. **Type Safety**: Add TypeScript interfaces or JSDoc types.
+4. **Optimization**: Reduce time complexity if possible.
+5. **Testing**: Generate 3 Unit Tests (Jest/PyTest) for edge cases.
+
+Please ask me to paste the code.`
+            },
+            {
+                title: "Viral Thread Generator",
+                category: "Social Media",
+                content: `Act as a Viral Ghostwriter for Twitter/X and LinkedIn. Convert the topic I give you into a high-engagement thread.
+                
+Structure:
+- Tweet 1: The Hook. Use a contrarian statement, a massive number, or a "How to" promise.
+- Tweet 2: The Context. Why does this matter?
+- Tweets 3-7: The Meat. Actionable steps, clearly numbered. Use short sentences.
+- Tweet 8: The Summary/TL;DR.
+- Tweet 9: The CTA (Follow me for more).
+
+Tone: Punchy, authoritative, but conversational. No hashtags.
+Ask me for the topic.`
+            },
+            {
+                title: "Salary Negotiation Script",
+                category: "Career",
+                content: `Act as a Negotiation Coach. I have a job offer (or asking for a raise). I need a script to negotiate a higher salary without losing the offer.
+                
+Strategy:
+- Express enthusiasm/gratitude first.
+- Pivot to "Market Value" based on my skills (not personal need).
+- Use the "Silence" technique in the script.
+- Suggest non-monetary perks if salary is capped (equity, remote days, sign-on bonus).
+
+Ask me for my current offer details and my target salary.`
+            },
+            {
+                title: "The 'Midjourney' Prompt Engineer",
+                category: "AI Art",
+                content: `Act as an expert Prompt Engineer for Midjourney v6. I want to generate an image of [Subject].
+                
+Construct a detailed prompt using this formula:
+[Subject] + [Art Style/Medium] + [Environment/Lighting] + [Camera Angle/Lens] + [Color Palette] + [Mood] + --ar [Aspect Ratio] + --v 6.0
+
+Example parameters to consider: 'Cinematic lighting', 'Unreal Engine 5', '8k resolution', 'Shot on 35mm'.
+Ask me what image you want to create.`
+            },
+            {
+                title: "Complex Legal Document Simplifier",
+                category: "Legal",
+                content: `Act as a Legal Tech AI. I will paste a legal clause or contract. You must:
+                
+1. **Translate**: Rewrite it in "Plain English" that a 12-year-old could understand.
+2. **Red Flags**: Highlight any clauses that seem predatory, one-sided, or non-standard.
+3. **Obligations**: List exactly what I must do and what the other party must do in bullet points.
+
+*Disclaimer: You are an AI, not a lawyer. This is for informational purposes.*
+Ask me to paste the text.`
+            },
+            {
+                title: "The 'Superlearner' Syllabus Generator",
+                category: "Education (Bonus)",
+                content: `Act as an expert Curriculum Designer. I want to learn [Skill/Topic] from scratch in 4 weeks.
+                
+Create a week-by-week roadmap:
+- **Week 1 (Foundations)**: Key concepts and vocabulary.
+- **Week 2 (Application)**: Simple projects to build.
+- **Week 3 (Advanced)**: Edge cases and deep dives.
+- **Week 4 (Mastery)**: A Capstone project to prove knowledge.
+
+For each week, suggest 1 book, 1 YouTube channel, and 1 active practice exercise.
+Ask me what you want to learn.`
+            },
+            {
+                title: "The Stoic Life Coach",
+                category: "Lifestyle (Bonus)",
+                content: `Act as Marcus Aurelius and Seneca combined. I will tell you a problem I am facing.
+                
+You must offer advice based strictly on Stoic philosophy:
+- Control what you can, accept what you cannot (Dichotomy of Control).
+- View obstacles as the way.
+- Memento Mori (Remember you will die).
+
+Keep the tone calm, wise, and resilient.
+Tell me your problem.`
+            }
         ];
 
         const faqs = [
@@ -387,19 +479,19 @@ Please ask me to paste my Python code snippet.`
             },
             {
                 question: "Do these prompts work with the free version of ChatGPT?",
-                answer: "Yes! All our prompts are rigorously tested on both GPT-3.5 (Free) and GPT-4o. While GPT-4 often allows for more nuance, the core logic of our 'Out of the Box' prompts significantly enhances the free version."
+                answer: "Yes! All our prompts are rigorously tested on both GPT-3.5 (Free) and GPT-4o."
             },
             {
                 question: "Can I cancel my subscription anytime?",
-                answer: "Absolutely. There are no lock-in contracts or hidden fees. You can cancel your subscription with one click from your email link or account settings, and you'll retain access until the end of your billing period."
+                answer: "Absolutely. There are no lock-in contracts or hidden fees."
             },
             {
                 question: "What makes these prompts 'Magical'?",
-                answer: "Most people use simple one-liners. Our prompts are complex, multi-step algorithms (Prompt Engineering) that instruct the AI to adopt specific personas, follow logical constraints, and critique its own work, unlocking capabilities you didn't know existed."
+                answer: "Most people use simple one-liners. Our prompts are complex, multi-step algorithms (Prompt Engineering) that instruct the AI to adopt specific personas."
             },
             {
                 question: "I paid but didn't get an email. What do I do?",
-                answer: "First, check your spam or promotions folder. If it's not there, please email support@promptmagic.com with your transaction ID, and we'll resolve it immediately."
+                answer: "First, check your spam or promotions folder. If it's not there, please email support@promptmagic.com."
             }
         ];
 
@@ -409,13 +501,52 @@ Please ask me to paste my Python code snippet.`
             document.getElementById('pricing').scrollIntoView({ behavior: 'smooth' });
         }
 
-        function handleSubscribe(plan) {
-            const link = paymentLinks[plan];
-            if (link) {
-                window.open(link, '_blank');
-            } else {
-                console.log("No payment link configured");
-            }
+        function handleSubscribe(planKey) {
+            const plan = plans[planKey];
+            if (!plan) return;
+
+            const options = {
+                "key": RAZORPAY_KEY_ID, 
+                "amount": plan.amount, 
+                "currency": "INR",
+                "name": "PromptMagic",
+                "description": plan.description,
+                "image": "https://cdn-icons-png.flaticon.com/512/6134/6134346.png",
+                "handler": function (response){
+                    // Payment Success!
+                    // console.log("Payment ID: " + response.razorpay_payment_id);
+                    unlockPremiumContent(); 
+                },
+                "theme": {
+                    "color": "#9333ea"
+                }
+            };
+            
+            const rzp = new Razorpay(options);
+            rzp.on('payment.failed', function (response){
+                alert("Payment Failed: " + response.error.description);
+            });
+            rzp.open();
+        }
+
+        function unlockPremiumContent() {
+            // 1. Hide Landing Page Elements
+            document.getElementById('landing-view').classList.add('hidden');
+            
+            // 2. Hide "Get Access" button in nav
+            document.getElementById('nav-actions').style.display = 'none';
+
+            // 3. Show Premium Dashboard
+            document.getElementById('premium-view').classList.remove('hidden');
+
+            // 4. Render Premium Content
+            renderPremiumPrompts();
+
+            // 5. Scroll to top
+            window.scrollTo(0, 0);
+
+            // 6. Optional: Persist state (simple version)
+            // localStorage.setItem('promptMagicUser', 'premium');
         }
 
         function copyToClipboard(text, btnId) {
@@ -429,12 +560,10 @@ Please ask me to paste my Python code snippet.`
                 const btn = document.getElementById(btnId);
                 const originalHtml = btn.innerHTML;
                 
-                // Change to success state
                 btn.className = "flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 border bg-green-500/20 border-green-500/50 text-green-400";
                 btn.innerHTML = `<i data-lucide="check" class="w-3.5 h-3.5"></i> Copied!`;
                 lucide.createIcons();
 
-                // Revert after 2 seconds
                 setTimeout(() => {
                     btn.className = "flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 border bg-slate-800 border-slate-700 text-slate-400 hover:bg-purple-600 hover:text-white hover:border-purple-500";
                     btn.innerHTML = originalHtml;
@@ -447,64 +576,44 @@ Please ask me to paste my Python code snippet.`
             document.body.removeChild(textArea);
         }
 
-        function togglePrompt(id) {
-            const contentDiv = document.getElementById(`prompt-content-${id}`);
-            const fadeDiv = document.getElementById(`prompt-fade-${id}`);
-            const btnText = document.getElementById(`prompt-btn-text-${id}`);
-            const icon = document.getElementById(`prompt-icon-${id}`);
-
-            // Currently expanded?
+        function togglePrompt(id, isPremium = false) {
+            const prefix = isPremium ? 'prem-prompt' : 'prompt';
+            const contentDiv = document.getElementById(`${prefix}-content-${id}`);
+            const fadeDiv = document.getElementById(`${prefix}-fade-${id}`);
+            const btnText = document.getElementById(`${prefix}-btn-text-${id}`);
+            
             const isExpanded = contentDiv.classList.contains('max-h-[600px]');
 
             if (isExpanded) {
-                // Collapse
                 contentDiv.classList.remove('max-h-[600px]', 'overflow-y-auto', 'custom-scrollbar');
                 contentDiv.classList.add('max-h-[140px]', 'overflow-hidden');
-                fadeDiv.style.display = 'block';
+                if(fadeDiv) fadeDiv.style.display = 'block';
                 btnText.innerText = "Expand Prompt";
-                // We'll just re-render icon via lucide after changing HTML? simpler to swap classes if using SVG directly but Lucide replaces elements
-                // Simpler approach for vanilla JS icons: re-inject HTML
-                // For simplicity, let's keep text only or use lucide re-init which might be heavy.
-                // Or just toggle text.
             } else {
-                // Expand
                 contentDiv.classList.remove('max-h-[140px]', 'overflow-hidden');
                 contentDiv.classList.add('max-h-[600px]', 'overflow-y-auto', 'custom-scrollbar');
-                fadeDiv.style.display = 'none';
+                if(fadeDiv) fadeDiv.style.display = 'none';
                 btnText.innerText = "Show Less";
             }
         }
         
         function toggleFAQ(id) {
             const content = document.getElementById(`faq-content-${id}`);
-            const icon = document.getElementById(`faq-icon-${id}`);
             const questionText = document.getElementById(`faq-question-${id}`);
             
-            // Check if open by checking height
             if (content.classList.contains('max-h-0')) {
-                // Open
                 content.classList.remove('max-h-0', 'opacity-0');
                 content.classList.add('max-h-96', 'opacity-100', 'mb-6');
-                
-                // Rotate icon logic - replacing lucide icon logic with CSS transform class on parent span
                 document.getElementById(`faq-icon-wrapper-${id}`).classList.add('rotate-180');
                 questionText.classList.remove('text-slate-200');
                 questionText.classList.add('text-purple-400');
-                
-                // Swap icon visuals (plus to minus) logic could go here, or just rotate the plus 45deg to look like x, 
-                // but the design requested Minus.
-                // We will rely on CSS rotation of the plus icon or swap innerHTML. 
-                // Let's swap HTML for cleaner icons.
                 document.getElementById(`faq-icon-wrapper-${id}`).innerHTML = `<i data-lucide="minus" class="w-5 h-5 text-purple-400"></i>`;
             } else {
-                // Close
                 content.classList.add('max-h-0', 'opacity-0');
                 content.classList.remove('max-h-96', 'opacity-100', 'mb-6');
-                
                 document.getElementById(`faq-icon-wrapper-${id}`).classList.remove('rotate-180');
                 questionText.classList.add('text-slate-200');
                 questionText.classList.remove('text-purple-400');
-                
                 document.getElementById(`faq-icon-wrapper-${id}`).innerHTML = `<i data-lucide="plus" class="w-5 h-5 text-slate-400 group-hover:text-purple-400"></i>`;
             }
             lucide.createIcons();
@@ -512,46 +621,50 @@ Please ask me to paste my Python code snippet.`
 
         // --- Render Functions ---
 
+        function createPromptCard(prompt, index, isPremium = false) {
+            const safeContent = prompt.content.replace(/`/g, "\\`").replace(/'/g, "\\'");
+            const prefix = isPremium ? 'prem-prompt' : 'prompt';
+            
+            return `
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 hover:border-purple-500/50 hover:shadow-[0_0_30px_rgba(168,85,247,0.15)] hover:-translate-y-1 transition-all duration-300 group relative flex flex-col h-full">
+                <div class="flex justify-between items-start mb-4">
+                    <h3 class="text-xl font-bold text-white group-hover:text-purple-300 transition-colors">${prompt.title}</h3>
+                    <span class="px-3 py-1 bg-slate-800 rounded-full text-xs text-slate-400 border border-slate-700 whitespace-nowrap ml-2">
+                        ${prompt.category}
+                    </span>
+                </div>
+                
+                <div id="${prefix}-content-${index}" class="relative bg-slate-950 p-4 rounded-xl border border-slate-800 font-mono text-sm text-slate-300 leading-relaxed mb-4 overflow-hidden transition-all duration-500 ease-in-out max-h-[140px]">
+                    <p class="whitespace-pre-line">${prompt.content}</p>
+                    <div id="${prefix}-fade-${index}" class="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-slate-950 via-slate-950/90 to-transparent pointer-events-none"></div>
+                </div>
+                
+                <div class="mt-auto flex items-center justify-between pt-2">
+                    <button onclick="togglePrompt(${index}, ${isPremium})" class="text-purple-400 text-sm font-medium hover:text-purple-300 transition-colors flex items-center gap-1 focus:outline-none">
+                        <span id="${prefix}-btn-text-${index}">Expand Prompt</span> 
+                        <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                    </button>
+
+                    <button id="${prefix}-copy-btn-${index}" onclick="copyToClipboard(\`${safeContent}\`, '${prefix}-copy-btn-${index}')" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 border bg-slate-800 border-slate-700 text-slate-400 hover:bg-purple-600 hover:text-white hover:border-purple-500">
+                        <i data-lucide="copy" class="w-3.5 h-3.5"></i> Copy
+                    </button>
+                </div>
+            </div>`;
+        }
+
         function renderDemoPrompts() {
             const container = document.getElementById('demo-container');
             let html = '';
             demoPrompts.forEach((prompt, index) => {
-                // Escape simple quotes for inline JS
-                const safeContent = prompt.content.replace(/`/g, "\\`").replace(/'/g, "\\'");
-                
-                html += `
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 hover:border-purple-500/50 hover:shadow-[0_0_30px_rgba(168,85,247,0.15)] hover:-translate-y-1 transition-all duration-300 group relative flex flex-col h-full">
-                    <div class="flex justify-between items-start mb-4">
-                        <h3 class="text-xl font-bold text-white group-hover:text-purple-300 transition-colors">${prompt.title}</h3>
-                        <span class="px-3 py-1 bg-slate-800 rounded-full text-xs text-slate-400 border border-slate-700 whitespace-nowrap ml-2">
-                            ${prompt.category}
-                        </span>
-                    </div>
-                    
-                    <div id="prompt-content-${index}" class="relative bg-slate-950 p-4 rounded-xl border border-slate-800 font-mono text-sm text-slate-300 leading-relaxed mb-4 overflow-hidden transition-all duration-500 ease-in-out max-h-[140px]">
-                        <p class="whitespace-pre-line">${prompt.content}</p>
-                        <div id="prompt-fade-${index}" class="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-slate-950 via-slate-950/90 to-transparent pointer-events-none"></div>
-                    </div>
-                    
-                    <div class="mt-auto flex items-center justify-between pt-2">
-                        <button onclick="togglePrompt(${index})" class="text-purple-400 text-sm font-medium hover:text-purple-300 transition-colors flex items-center gap-1 focus:outline-none">
-                            <span id="prompt-btn-text-${index}">Expand Prompt</span> 
-                            <i data-lucide="chevron-down" class="w-4 h-4"></i>
-                        </button>
-
-                        <button id="copy-btn-${index}" onclick="copyToClipboard(\`${safeContent}\`, 'copy-btn-${index}')" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 border bg-slate-800 border-slate-700 text-slate-400 hover:bg-purple-600 hover:text-white hover:border-purple-500">
-                            <i data-lucide="copy" class="w-3.5 h-3.5"></i> Copy
-                        </button>
-                    </div>
-                </div>`;
+                html += createPromptCard(prompt, index, false);
             });
             container.innerHTML = html;
         }
 
-        function renderLockedPrompts() {
-            const container = document.getElementById('locked-container');
+        function renderLockedPreview() {
+            const container = document.getElementById('locked-preview-container');
             let html = '';
-            lockedPrompts.forEach((prompt, index) => {
+            lockedTitles.forEach((prompt, index) => {
                 html += `
                 <div class="relative group overflow-hidden rounded-2xl">
                     <!-- Blur Overlay -->
@@ -564,8 +677,7 @@ Please ask me to paste my Python code snippet.`
                             Unlock for ₹9
                         </button>
                     </div>
-
-                    <!-- Card Content (Visible underneath) -->
+                    <!-- Card Preview -->
                     <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 h-full flex flex-col opacity-40 group-hover:opacity-30 transition-opacity">
                         <div class="flex justify-between items-start mb-4">
                             <h3 class="text-xl font-bold text-white">${prompt.title}</h3>
@@ -583,6 +695,20 @@ Please ask me to paste my Python code snippet.`
                 </div>`;
             });
             container.innerHTML = html;
+        }
+
+        function renderPremiumPrompts() {
+            const container = document.getElementById('premium-container');
+            let html = '';
+            // Concatenate demo prompts (optional, if you want them in dashboard too) + premium prompts
+            const allPrompts = [...demoPrompts, ...premiumPrompts];
+            
+            allPrompts.forEach((prompt, index) => {
+                html += createPromptCard(prompt, index, true);
+            });
+            container.innerHTML = html;
+            // Re-init icons for new content
+            lucide.createIcons();
         }
 
         function renderFAQs() {
@@ -612,7 +738,7 @@ Please ask me to paste my Python code snippet.`
         // --- Init ---
         document.addEventListener('DOMContentLoaded', () => {
             renderDemoPrompts();
-            renderLockedPrompts();
+            renderLockedPreview();
             renderFAQs();
             lucide.createIcons();
         });
