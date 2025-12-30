@@ -1,10 +1,55 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Presentation Generator</title>
+    <title>PromptMagic - Unlock Hidden Potential</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        /* Custom Animations & Scrollbar */
+        @keyframes fade-in-up {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in-up {
+            animation: fade-in-up 0.8s ease-out forwards;
+            opacity: 0;
+        }
+        .animate-gradient-x {
+            background-size: 200% 200%;
+            animation: gradient-x 15s ease infinite;
+        }
+        @keyframes gradient-x {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        /* Custom Scrollbar for expanded prompts */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #0f172a; 
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #334155; 
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #475569; 
+        }
+
+        /* Utility for content height transition */
+        .transition-max-height {
+            transition: max-height 0.5s ease-in-out;
+        }
+    </style>
     <script>
         tailwind.config = {
             theme: {
@@ -16,357 +61,562 @@
             }
         }
     </script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pptxgenjs/3.12.0/pptxgen.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
-    <script>
-        pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js`;
-    </script>
 </head>
-<body class="bg-gray-100 font-sans">
-    <div id="root"></div>
+<body class="bg-slate-950 text-slate-100 font-sans selection:bg-purple-500 selection:text-white overflow-x-hidden">
 
-    <script type="text/babel">
-        const { useState, useEffect, useCallback } = React;
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 bg-slate-950/80 backdrop-blur-md border-b border-slate-800 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center gap-2 group cursor-pointer">
+                    <i data-lucide="sparkles" class="h-6 w-6 text-purple-400 group-hover:rotate-12 transition-transform duration-300"></i>
+                    <span class="font-bold text-xl tracking-tight bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                        PromptMagic
+                    </span>
+                </div>
+                <button onclick="scrollToSubscribe()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-full text-sm font-medium transition-all shadow-[0_0_15px_rgba(147,51,234,0.3)] hover:shadow-[0_0_25px_rgba(147,51,234,0.5)] hover:scale-105 active:scale-95">
+                    Get Access
+                </button>
+            </div>
+        </div>
+    </nav>
 
-        // --- Helper function to parse PDF ---
-        async function extractTextFromPdf(file) {
-            const reader = new FileReader();
-            return new Promise((resolve, reject) => {
-                reader.onload = async (event) => {
-                    try {
-                        const typedarray = new Uint8Array(event.target.result);
-                        const pdf = await pdfjsLib.getDocument(typedarray).promise;
-                        let text = '';
-                        for (let i = 1; i <= pdf.numPages; i++) {
-                            const page = await pdf.getPage(i);
-                            const content = await page.getTextContent();
-                            content.items.forEach(item => {
-                                text += item.str + ' ';
-                            });
-                            text += '\n';
-                        }
-                        resolve(text);
-                    } catch (error) {
-                        console.error('Error parsing PDF:', error);
-                        reject('Failed to parse PDF file.');
-                    }
-                };
-                reader.onerror = () => reject('Failed to read file.');
-                reader.readAsArrayBuffer(file);
-            });
-        }
+    <!-- Hero Section -->
+    <header class="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
+        <!-- Animated Background Blobs -->
+        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl pointer-events-none">
+            <div class="absolute top-20 left-10 w-72 h-72 bg-purple-500/20 rounded-full blur-[100px] animate-pulse"></div>
+            <div class="absolute bottom-20 right-10 w-96 h-96 bg-blue-500/10 rounded-full blur-[100px] animate-pulse" style="animation-delay: 1s;"></div>
+            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-pink-500/5 rounded-full blur-[120px] animate-pulse" style="animation-delay: 2s;"></div>
+        </div>
         
-        // --- Icons ---
-        const IconUpload = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>;
-        const IconWand = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 4V2m0 14v-2m-7.5-1.5L6 13m0-5l1.5-1.5M12 22v-2m4.5-1.5L18 17m0-5l-1.5-1.5M7.5 4.5L6 6m0 12l1.5 1.5M12 2v2m0 8a4 4 0 0 0-4 4h8a4 4 0 0 0-4-4Z"/></svg>;
-        const IconDownload = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>;
-        const IconSparkles = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>;
-        const IconScript = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900 border border-slate-700 text-purple-300 text-xs font-semibold mb-6 uppercase tracking-wider hover:border-purple-500/50 transition-colors cursor-default animate-fade-in-up">
+                <span class="relative flex h-2 w-2">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-purple-500"></span>
+                </span>
+                Updated Weekly
+            </div>
+            <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight mb-8 animate-fade-in-up" style="animation-delay: 0.1s;">
+                Unlock the <span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 animate-gradient-x">Hidden Potential</span> of GPT
+            </h1>
+            <p class="max-w-2xl mx-auto text-xl text-slate-400 mb-10 leading-relaxed animate-fade-in-up" style="animation-delay: 0.2s;">
+                Stop using average prompts. Access our curated library of "Out of the Box" magical prompts designed to supercharge your workflow.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fade-in-up" style="animation-delay: 0.3s;">
+                <button onclick="scrollToSubscribe()" class="w-full sm:w-auto px-8 py-4 bg-white text-slate-900 rounded-xl font-bold text-lg hover:bg-slate-100 transition-all hover:scale-105 active:scale-95 shadow-lg shadow-white/10">
+                    Start for ₹9/mo
+                </button>
+                <button onclick="document.getElementById('demo-section').scrollIntoView({behavior: 'smooth'})" class="w-full sm:w-auto px-8 py-4 bg-slate-800 text-white rounded-xl font-bold text-lg hover:bg-slate-700 transition-all hover:scale-105 active:scale-95 border border-slate-700 hover:border-slate-500">
+                    View Demo Prompts
+                </button>
+            </div>
+        </div>
+    </header>
 
-        // --- Main App Component ---
-        function App() {
-            const [sourceText, setSourceText] = useState('');
-            const [fileName, setFileName] = useState('');
-            const [userContext, setUserContext] = useState('');
-            const [generatedSlides, setGeneratedSlides] = useState([]);
-            const [talkingPoints, setTalkingPoints] = useState('');
-            const [isLoading, setIsLoading] = useState(false);
-            const [isEditing, setIsEditing] = useState(false);
-            const [error, setError] = useState('');
-            const [numSlides, setNumSlides] = useState(5);
-            const [editingSlide, setEditingSlide] = useState(null);
+    <!-- Demo Section -->
+    <section id="demo-section" class="py-20 bg-slate-900/50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center gap-2 mb-10">
+                <i data-lucide="unlock" class="text-green-400 h-6 w-6 animate-bounce"></i>
+                <h2 class="text-3xl font-bold">Free Demo Prompts</h2>
+            </div>
             
-            const callGeminiAPI = useCallback(async (prompt, responseSchema) => {
-                const payload = {
-                    contents: [{ role: "user", parts: [{ text: prompt }] }],
-                    generationConfig: {
-                        responseMimeType: "application/json",
-                        responseSchema: responseSchema
-                    }
-                };
-                const apiKey = "";
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+            <div id="demo-container" class="grid md:grid-cols-2 gap-6">
+                <!-- JS will render cards here -->
+            </div>
+        </div>
+    </section>
 
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
+    <!-- Locked Section -->
+    <section class="py-20 relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between mb-10">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="lock" class="text-purple-400 h-6 w-6"></i>
+                    <h2 class="text-3xl font-bold">Premium Magical Prompts</h2>
+                </div>
+                <span class="text-sm text-slate-400 bg-slate-900 px-3 py-1 rounded-full border border-slate-800">100+ Prompts Locked</span>
+            </div>
 
-                if (!response.ok) {
-                    const errorBody = await response.text();
-                    throw new Error(`API Error: ${response.status} ${response.statusText}. Details: ${errorBody}`);
-                }
-                const result = await response.json();
-                if (result.candidates && result.candidates.length > 0 && result.candidates[0].content && result.candidates[0].content.parts.length > 0) {
-                    return JSON.parse(result.candidates[0].content.parts[0].text);
-                } else {
-                    console.error("Unexpected API response structure:", result);
-                    throw new Error('The AI returned an empty or invalid response.');
-                }
-            }, []);
-
-            const handleFileChange = async (event) => {
-                const file = event.target.files[0];
-                if (!file) return;
-
-                setFileName(file.name);
-                setIsLoading(true);
-                setError('');
-                setSourceText('');
-                setGeneratedSlides([]);
-                setTalkingPoints('');
-
-                try {
-                    let text = '';
-                    if (file.type === 'application/pdf') {
-                        text = await extractTextFromPdf(file);
-                    } else if (file.type === 'text/csv' || file.type === 'text/plain') {
-                        text = await file.text();
-                    } else {
-                        throw new Error('Unsupported file type. Please use PDF, TXT, or CSV.');
-                    }
-                    setSourceText(text);
-                } catch (err) {
-                    setError(err.message);
-                } finally {
-                    setIsLoading(false);
-                    event.target.value = null;
-                }
-            };
-
-            const generatePresentationContent = async () => {
-                if (!sourceText) {
-                    setError('Please upload a file or paste text first.');
-                    return;
-                }
-                setIsLoading(true);
-                setError('');
-                setGeneratedSlides([]);
-                setTalkingPoints('');
-
-                const prompt = `Based on the following document content, generate a slide deck presentation. The presentation should have exactly ${numSlides} slides. For each slide, provide a short, engaging title and 3-5 concise bullet points that capture the key information.
-                ${userContext ? `\nPlease follow these additional instructions: ${userContext}\n\n` : ''}
-                Document Content:\n---\n${sourceText.substring(0, 15000)}\n---`;
-                
-                const schema = {
-                    type: "OBJECT",
-                    properties: {
-                        slides: {
-                            type: "ARRAY",
-                            items: {
-                                type: "OBJECT",
-                                properties: {
-                                    title: { type: "STRING" },
-                                    points: { type: "ARRAY", items: { type: "STRING" } }
-                                },
-                                required: ["title", "points"]
-                            }
-                        }
-                    }
-                };
-
-                try {
-                    const parsedJson = await callGeminiAPI(prompt, schema);
-                    setGeneratedSlides(parsedJson.slides || []);
-                } catch (err) {
-                    console.error('Generation failed:', err);
-                    setError(err.message || 'An unexpected error occurred during generation.');
-                } finally {
-                    setIsLoading(false);
-                }
-            };
-
-            const generateTalkingPoints = async () => {
-                if (generatedSlides.length === 0) return;
-                setIsLoading(true);
-                setError('');
-                setTalkingPoints('✨ Generating speaker notes...');
-
-                const presentationContent = generatedSlides.map((s, i) => `Slide ${i+1}: ${s.title}\n${s.points.join('\n- ')}`).join('\n\n');
-                const prompt = `Based on the following presentation slides, generate a detailed set of talking points or a speaker script. The script should flow logically and provide more depth and context for each bullet point.\n\nPresentation Content:\n---\n${presentationContent}\n---`;
-                const schema = { type: "OBJECT", properties: { script: { type: "STRING" } } };
-
-                try {
-                    const result = await callGeminiAPI(prompt, schema);
-                    setTalkingPoints(result.script);
-                } catch(err) {
-                    setError(err.message);
-                    setTalkingPoints('');
-                } finally {
-                    setIsLoading(false);
-                }
-            };
+            <div id="locked-container" class="grid md:grid-cols-3 gap-6">
+                <!-- JS will render locked cards here -->
+            </div>
             
-            const handleSlideEdit = async (index, action, tone = '') => {
-                 const slide = generatedSlides[index];
-                 setIsEditing(true);
-                 setEditingSlide({index});
-                 let prompt = '';
-                 switch(action) {
-                     case 'expand':
-                         prompt = `Expand on the following slide content by adding one more detailed bullet point or elaborating on an existing one.\n\nSlide Title: ${slide.title}\nBullet Points:\n- ${slide.points.join('\n- ')}`;
-                         break;
-                     case 'simplify':
-                         prompt = `Simplify the language of the following slide content to make it more concise and easier to understand.\n\nSlide Title: ${slide.title}\nBullet Points:\n- ${slide.points.join('\n- ')}`;
-                         break;
-                     case 'tone':
-                         prompt = `Rewrite the following slide content to have a ${tone} tone.\n\nSlide Title: ${slide.title}\nBullet Points:\n- ${slide.points.join('\n- ')}`;
-                         break;
-                 }
+            <div class="mt-12 text-center">
+                <p class="text-slate-400 mb-4 animate-pulse">...and hundreds more added weekly.</p>
+                <button onclick="scrollToSubscribe()" class="text-purple-400 hover:text-purple-300 font-medium flex items-center justify-center gap-2 mx-auto hover:underline decoration-2 underline-offset-4 transition-all">
+                    See plans <i data-lucide="zap" class="w-4 h-4 fill-purple-400"></i>
+                </button>
+            </div>
+        </div>
+    </section>
 
-                const schema = {
-                    type: "OBJECT",
-                    properties: {
-                        title: { type: "STRING" },
-                        points: { type: "ARRAY", items: { type: "STRING" } }
-                    },
-                     required: ["title", "points"]
-                };
+    <!-- Pricing Section -->
+    <section id="pricing" class="py-24 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold mb-4">Simple, Tiny Pricing</h2>
+                <p class="text-slate-400 max-w-xl mx-auto">
+                    We keep it affordable so everyone can access the power of advanced AI. Delivered straight to your inbox.
+                </p>
+            </div>
 
-                 try {
-                     const editedSlide = await callGeminiAPI(prompt, schema);
-                     const newSlides = [...generatedSlides];
-                     newSlides[index] = editedSlide;
-                     setGeneratedSlides(newSlides);
-                 } catch (err) {
-                     setError("Failed to edit slide. " + err.message);
-                 } finally {
-                     setIsEditing(false);
-                     setEditingSlide(null);
-                 }
-            };
-
-            const downloadPptx = () => {
-                if (generatedSlides.length === 0) return;
-                let pptx = new window.PptxGenJS();
-                pptx.layout = 'LAYOUT_WIDE';
+            <div class="grid md:grid-cols-4 gap-6 max-w-6xl mx-auto">
                 
-                const titleSlide = pptx.addSlide();
-                titleSlide.background = { color: '003366' };
-                const title = fileName ? `Summary of ${fileName.split('.').slice(0, -1).join('.')}` : 'AI Generated Presentation';
-                titleSlide.addText(title, { x: 0.5, y: 1.5, w: '90%', h: 1, fontSize: 40, color: 'FFFFFF', bold: true, align: 'center' });
-                titleSlide.addText('Generated with ✨ Gemini AI', { x: 0.5, y: 4.5, w: '90%', h: 0.5, fontSize: 18, color: 'F1F1F1', align: 'center' });
+                <!-- Monthly -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col hover:border-slate-600 transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
+                    <h3 class="text-lg font-medium text-slate-300 mb-2">Monthly</h3>
+                    <div class="mb-4">
+                        <span class="text-4xl font-bold text-white">₹9</span>
+                        <span class="text-slate-500">/mo</span>
+                    </div>
+                    <p class="text-sm text-slate-400 mb-6">Perfect for trying it out.</p>
+                    <ul class="space-y-3 mb-8 flex-1">
+                        <li class="flex items-center gap-2 text-sm text-slate-300"><i data-lucide="check" class="w-4 h-4 text-purple-400"></i> Weekly Inbox Updates</li>
+                        <li class="flex items-center gap-2 text-sm text-slate-300"><i data-lucide="check" class="w-4 h-4 text-purple-400"></i> Full Prompt Library</li>
+                    </ul>
+                    <button onclick="handleSubscribe('monthly')" class="w-full py-3 rounded-xl border border-purple-500 text-purple-400 font-bold hover:bg-purple-500/10 transition-colors">
+                        Subscribe Monthly
+                    </button>
+                </div>
 
-                generatedSlides.forEach(slideData => {
-                    const slide = pptx.addSlide();
-                    slide.addText(slideData.title, { x: 0.5, y: 0.25, w: '90%', h: 1, fontSize: 28, bold: true, color: '003366' });
-                    slide.addText(slideData.points.join('\n'), { x: 0.75, y: 1.5, w: '85%', h: 4, fontSize: 18, bullet: { type: 'dot', indent: 20 }, color: '333333', lineSpacing: 32 });
-                });
-                
-                if(talkingPoints && typeof talkingPoints === 'string') {
-                    const notesSlide = pptx.addSlide();
-                    notesSlide.addText("Speaker Notes", { x: 0.5, y: 0.25, w: '90%', h: 1, fontSize: 32, bold: true, color: '003366' });
-                    const notesChunks = talkingPoints.match(/[\s\S]{1,500}/g) || [];
-                    notesChunks.forEach((chunk, i) => {
-                        const slide = i > 0 ? pptx.addSlide() : notesSlide;
-                        if (i > 0) slide.addText("Speaker Notes (Cont.)", { x: 0.5, y: 0.25, w: '90%', h: 1, fontSize: 32, bold: true, color: '003366' });
-                        slide.addText(chunk, { x: 0.75, y: 1.5, w: '85%', h: 4, fontSize: 12, color: '333333' });
-                    });
-                }
-                
-                const safeFileName = (fileName || 'presentation').replace(/[^a-z0-9]/gi, '_').toLowerCase();
-                pptx.writeFile({ fileName: `${safeFileName}_ai_presentation.pptx` });
-            };
+                <!-- Quarterly -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col relative overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-xl hover:border-blue-500/30">
+                    <div class="absolute top-0 right-0 bg-blue-600 text-xs px-2 py-1 rounded-bl-lg font-bold shadow-lg">SAVE 11%</div>
+                    <h3 class="text-lg font-medium text-slate-300 mb-2">Quarterly</h3>
+                    <div class="mb-1">
+                        <span class="text-4xl font-bold text-white">₹24</span>
+                        <span class="text-slate-500">/3mo</span>
+                    </div>
+                    <div class="text-xs text-slate-500 line-through mb-4">was ₹27</div>
+                    <ul class="space-y-3 mb-8 flex-1">
+                        <li class="flex items-center gap-2 text-sm text-slate-300"><i data-lucide="check" class="w-4 h-4 text-blue-400"></i> All Monthly Perks</li>
+                        <li class="flex items-center gap-2 text-sm text-slate-300"><i data-lucide="check" class="w-4 h-4 text-blue-400"></i> Priority Support</li>
+                    </ul>
+                    <button onclick="handleSubscribe('quarterly')" class="w-full py-3 rounded-xl bg-slate-800 text-white font-bold hover:bg-slate-700 transition-colors">
+                        Get Quarterly
+                    </button>
+                </div>
 
-            return (
-                <div className="min-h-screen flex items-center justify-center p-4">
-                    <div className="w-full max-w-6xl bg-white rounded-2xl shadow-xl p-8 space-y-8">
-                        
-                        <header className="text-center">
-                            <h1 className="text-4xl font-bold text-gray-800">AI Presentation Generator</h1>
-                            <p className="text-gray-500 mt-2">Upload a document, provide context, and let ✨ Gemini AI create and enhance your slide deck.</p>
-                        </header>
+                <!-- Yearly -->
+                <div class="bg-slate-900 border-2 border-purple-500 rounded-2xl p-6 flex flex-col relative transform md:-translate-y-4 shadow-[0_0_40px_rgba(168,85,247,0.15)] transition-all duration-300 hover:-translate-y-6 hover:shadow-[0_0_60px_rgba(168,85,247,0.25)]">
+                    <div class="absolute top-0 right-0 left-0 bg-purple-600 text-center text-xs py-1 font-bold uppercase tracking-wider">Most Popular</div>
+                    <h3 class="text-lg font-medium text-purple-300 mb-2 mt-4">Yearly</h3>
+                    <div class="mb-1">
+                        <span class="text-4xl font-bold text-white">₹79</span>
+                        <span class="text-slate-500">/yr</span>
+                    </div>
+                    <div class="text-xs text-slate-500 line-through mb-4">was ₹108</div>
+                    <ul class="space-y-3 mb-8 flex-1">
+                        <li class="flex items-center gap-2 text-sm text-white"><i data-lucide="star" class="w-4 h-4 text-yellow-400 fill-yellow-400"></i> <span class="font-bold text-green-400">Save 27%</span></li>
+                        <li class="flex items-center gap-2 text-sm text-slate-300"><i data-lucide="check" class="w-4 h-4 text-purple-400"></i> 52 Weeks of Prompts</li>
+                        <li class="flex items-center gap-2 text-sm text-slate-300"><i data-lucide="check" class="w-4 h-4 text-purple-400"></i> Exclusive E-book</li>
+                    </ul>
+                    <button onclick="handleSubscribe('yearly')" class="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold hover:opacity-90 transition-opacity shadow-lg">
+                        Subscribe Yearly
+                    </button>
+                </div>
 
-                        {error && (
-                            <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md my-4" role="alert">
-                                <div className="flex justify-between items-center">
-                                    <span><span className="font-bold">Error:</span> {error}</span>
-                                    <button onClick={() => setError('')} className="font-bold text-xl">&times;</button>
-                                </div>
-                            </div>
-                        )}
+                <!-- Half-Yearly -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col transition-all duration-300 hover:-translate-y-2 hover:shadow-xl hover:border-green-500/30">
+                    <div class="absolute top-0 right-0 bg-green-600 text-xs px-2 py-1 rounded-bl-lg font-bold shadow-lg">SAVE 16%</div>
+                    <h3 class="text-lg font-medium text-slate-300 mb-2">Half-Yearly</h3>
+                    <div class="mb-1">
+                        <span class="text-4xl font-bold text-white">₹45</span>
+                        <span class="text-slate-500">/6mo</span>
+                    </div>
+                    <div class="text-xs text-slate-500 line-through mb-4">was ₹54</div>
+                    <ul class="space-y-3 mb-8 flex-1">
+                        <li class="flex items-center gap-2 text-sm text-slate-300"><i data-lucide="check" class="w-4 h-4 text-green-400"></i> All Monthly Perks</li>
+                        <li class="flex items-center gap-2 text-sm text-slate-300"><i data-lucide="check" class="w-4 h-4 text-green-400"></i> Locked Price Rate</li>
+                    </ul>
+                    <button onclick="handleSubscribe('halfYearly')" class="w-full py-3 rounded-xl bg-slate-800 text-white font-bold hover:bg-slate-700 transition-colors">
+                        Get Half-Yearly
+                    </button>
+                </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            {/* --- Input Section --- */}
-                            <div className="space-y-6">
-                                <h2 className="text-2xl font-semibold text-gray-700 border-b pb-2">1. Provide Content</h2>
-                                <label htmlFor="file-upload" className="relative cursor-pointer bg-blue-50 hover:bg-blue-100 text-blue-700 font-medium py-4 px-6 rounded-lg border-2 border-dashed border-blue-200 flex flex-col items-center justify-center text-center w-full transition-colors"><IconUpload /><span className="mt-2 text-base">{fileName ? `Selected: ${fileName}` : "Click to upload PDF, TXT, or CSV"}</span><input id="file-upload" type="file" className="sr-only" onChange={handleFileChange} accept=".pdf,.txt,.csv" disabled={isLoading || isEditing} /></label>
-                                <div className="flex items-center text-gray-400"><div className="flex-grow border-t border-gray-300"></div><span className="flex-shrink mx-4">Or paste text</span><div className="flex-grow border-t border-gray-300"></div></div>
-                                <textarea value={sourceText} onChange={(e) => { setSourceText(e.target.value); setFileName(''); }} placeholder="Paste your raw text content here..." className="w-full h-40 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" disabled={isLoading || isEditing}></textarea>
-                                <div className="space-y-2"><label htmlFor="context-box" className="text-md font-medium text-gray-700">Optional: Provide context or instructions</label><textarea id="context-box" value={userContext} onChange={(e) => setUserContext(e.target.value)} placeholder="e.g., 'Make this for a beginner audience', 'The tone should be formal'" className="w-full h-24 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" disabled={isLoading || isEditing}></textarea></div>
-                                <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                                    <div><label htmlFor="num-slides" className="text-sm font-medium text-gray-600 mr-2">Number of slides:</label><select id="num-slides" value={numSlides} onChange={(e) => setNumSlides(Number(e.target.value))} className="p-2 border border-gray-300 rounded-md focus:ring-blue-500" disabled={isLoading || isEditing}>{[3, 4, 5, 6, 7, 8, 9, 10].map(n => <option key={n} value={n}>{n}</option>)}</select></div>
-                                    <button onClick={generatePresentationContent} disabled={isLoading || isEditing || !sourceText} className="w-full sm:w-auto flex items-center justify-center gap-2 bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 disabled:bg-gray-400 transition-all transform hover:scale-105">{isLoading && !isEditing ? (<><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div><span>Generating...</span></>) : (<><IconWand/><span>✨ Generate Slides</span></>)}</button>
-                                </div>
-                            </div>
+            </div>
+        </div>
+    </section>
 
-                            {/* --- Output Section --- */}
-                            <div className="space-y-6">
-                                <div className="flex justify-between items-center border-b pb-2">
-                                    <h2 className="text-2xl font-semibold text-gray-700">2. Preview & Download</h2>
-                                    <button onClick={downloadPptx} disabled={generatedSlides.length === 0 || isLoading || isEditing} className="flex items-center gap-2 bg-green-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-green-700 disabled:bg-gray-400 transition-all"><IconDownload /><span>Download .pptx</span></button>
-                                </div>
-                                
-                                { generatedSlides.length > 0 && (
-                                  <div className="flex justify-center">
-                                      <button onClick={generateTalkingPoints} disabled={isLoading || isEditing} className="flex items-center gap-2 bg-purple-600 text-white font-semibold py-2 px-5 rounded-lg shadow-md hover:bg-purple-700 disabled:bg-gray-400 transition-all transform hover:scale-105"><IconScript /><span>✨ Suggest Talking Points</span></button>
-                                  </div>
-                                )}
-                                
-                                {talkingPoints && (
-                                    <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
-                                      <h3 className="text-lg font-bold text-purple-800">Speaker Notes</h3>
-                                      <p className="mt-2 text-gray-700 whitespace-pre-wrap">{talkingPoints}</p>
-                                    </div>
-                                )}
+    <!-- FAQ Section -->
+    <section class="py-24 bg-slate-950 relative overflow-hidden">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold mb-4">Frequently Asked Questions</h2>
+                <p class="text-slate-400">Everything you need to know about the service.</p>
+            </div>
+            
+            <div id="faq-container" class="bg-slate-900/50 border border-slate-800 rounded-3xl p-8 backdrop-blur-sm">
+                <!-- JS will render FAQs here -->
+            </div>
+        </div>
+        
+        <!-- Decorative background element for FAQ -->
+        <div class="absolute top-1/2 left-0 -translate-y-1/2 w-96 h-96 bg-purple-500/5 rounded-full blur-[100px] pointer-events-none"></div>
+    </section>
 
-                                <div className="h-96 bg-gray-50 p-4 rounded-lg border overflow-y-auto space-y-4">
-                                    { (isLoading && !isEditing) && generatedSlides.length === 0 && <div className="flex flex-col items-center justify-center h-full text-gray-500"><IconWand className="w-12 h-12 text-blue-400 animate-pulse" /><p className="mt-4 text-lg font-medium">AI is analyzing your content...</p></div>}
-                                    {!isLoading && generatedSlides.length === 0 && <div className="flex flex-col items-center justify-center h-full text-gray-400"><div className="w-20 h-20 bg-gray-200 rounded-lg flex items-center justify-center"><svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg></div><p className="mt-4 text-center">Your generated slides will appear here.</p></div>}
-                                    {generatedSlides.map((slide, index) => (
-                                        <div key={index} className="bg-white p-4 rounded-lg shadow border border-gray-200 animate-fade-in relative">
-                                            {isEditing && editingSlide?.index === index && <div className="absolute inset-0 bg-white/70 flex items-center justify-center rounded-lg z-10"><div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div></div>}
-                                            <div className="flex justify-between items-start">
-                                                <div>
-                                                    <h3 className="text-lg font-bold text-blue-800">Slide {index + 1}: {slide.title}</h3>
-                                                    <ul className="mt-2 list-disc list-inside text-gray-700 space-y-1">{slide.points.map((point, pIndex) => <li key={pIndex}>{point}</li>)}</ul>
-                                                </div>
-                                                <div className="relative">
-                                                  <button onClick={() => setEditingSlide(editingSlide?.index === index ? null : {index})} className="p-1 rounded-full hover:bg-gray-200" disabled={isEditing}><IconSparkles /> </button>
-                                                   {editingSlide?.index === index && (
-                                                      <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-20 border">
-                                                          <button onClick={() => handleSlideEdit(index, 'expand')} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Expand</button>
-                                                          <button onClick={() => handleSlideEdit(index, 'simplify')} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Simplify</button>
-                                                          <div className="border-t my-1"></div>
-                                                          <button onClick={() => handleSlideEdit(index, 'tone', 'Professional')} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">To Professional</button>
-                                                          <button onClick={() => handleSlideEdit(index, 'tone', 'Casual')} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">To Casual</button>
-                                                          <button onClick={() => handleSlideEdit(index, 'tone', 'Enthusiastic')} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">To Enthusiastic</button>
-                                                      </div>
-                                                  )}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
+    <!-- Footer -->
+    <footer class="bg-slate-950 border-t border-slate-900 pt-16 pb-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-3 gap-8 mb-12">
+                <div>
+                    <div class="flex items-center gap-2 mb-4 group cursor-pointer">
+                        <i data-lucide="sparkles" class="h-5 w-5 text-purple-400 group-hover:rotate-12 transition-transform"></i>
+                        <span class="font-bold text-lg text-white">PromptMagic</span>
+                    </div>
+                    <p class="text-slate-500 text-sm">
+                        Unlocking the true potential of AI, one prompt at a time. Join thousands of users working smarter, not harder.
+                    </p>
+                </div>
+                <div>
+                    <h4 class="font-bold text-white mb-4">Features</h4>
+                    <ul class="space-y-2 text-sm text-slate-500">
+                        <li class="flex items-center gap-2 hover:text-purple-400 transition-colors cursor-default"><i data-lucide="mail" class="w-3.5 h-3.5"></i> Weekly Inbox Delivery</li>
+                        <li class="flex items-center gap-2 hover:text-purple-400 transition-colors cursor-default"><i data-lucide="shield" class="w-3.5 h-3.5"></i> Cancel Anytime</li>
+                        <li class="flex items-center gap-2 hover:text-purple-400 transition-colors cursor-default"><i data-lucide="zap" class="w-3.5 h-3.5"></i> Instant Access</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold text-white mb-4">Newsletter</h4>
+                    <p class="text-slate-500 text-sm mb-4">Get a free prompt every month.</p>
+                    <div class="flex gap-2">
+                        <input type="email" placeholder="Enter email" class="bg-slate-900 border border-slate-800 rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:border-purple-500 w-full transition-colors" />
+                        <button class="bg-purple-600 px-4 py-2 rounded-lg text-white text-sm font-bold hover:bg-purple-500 hover:scale-105 active:scale-95 transition-all">Join</button>
                     </div>
                 </div>
-            );
+            </div>
+            <div class="border-t border-slate-900 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-slate-600">
+                <p>&copy; 2024 PromptMagic. All rights reserved.</p>
+                <div class="flex gap-4 mt-4 md:mt-0">
+                    <a href="#" class="hover:text-slate-400 transition-colors">Privacy Policy</a>
+                    <a href="#" class="hover:text-slate-400 transition-colors">Terms of Service</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // --- Data ---
+        const paymentLinks = {
+            monthly: "https://razorpay.com/payment-link/placeholder-monthly", 
+            quarterly: "https://razorpay.com/payment-link/placeholder-quarterly",
+            yearly: "https://razorpay.com/payment-link/placeholder-yearly",
+            halfYearly: "https://razorpay.com/payment-link/placeholder-halfyearly"
+        };
+
+        const demoPrompts = [
+            {
+                title: "The Socratic Tutor",
+                category: "Education",
+                content: `Act as a Socratic Tutor. You must never provide the answer immediately. Instead, your goal is to guide me to the answer by asking probing, thought-provoking questions.
+      
+Rules:
+1. Start by asking me what topic I want to explore.
+2. Gauge my current understanding of the topic with an initial question.
+3. Break down the problem into smaller, manageable parts.
+4. If I make a mistake, gently guide me back with a question that highlights the error in logic (e.g., "If that were true, what would imply about X?").
+5. Praise critical thinking and logical steps, not just correct answers.
+6. Adapt your vocabulary and complexity to my level of knowledge.
+
+Your goal is to foster independent thinking and deep understanding, not to be a search engine. Start by asking: "What would you like to learn today?"`
+            },
+            {
+                title: "The ELI5 Expert",
+                category: "Explanation",
+                content: `You are the Universal Simplifier. Your task is to explain complex topics to me as if I am a 5-year-old (ELI5).
+
+Guidelines:
+- Use simple language (basic vocabulary only).
+- Use analogies involving everyday objects, animals, toys, or playground scenarios (e.g., "Think of the internet like a giant web of strings connecting tin can phones").
+- Avoid all jargon. If a technical term is unavoidable, explain it immediately with a metaphor.
+- Keep sentences short and punchy.
+- Start with a 'Hook' to grab attention (e.g., "Imagine you have a big box of Lego...").
+- Check for understanding at the end by asking a simple fun question.
+
+Please ask me: "What complex topic is confusing you right now?"`
+            },
+            {
+                title: "The Devil's Advocate",
+                category: "Critical Thinking",
+                content: `Act as a skilled Debater and Devil's Advocate. I will present an opinion, argument, or idea. Your task is to rigorously critique it to help me strengthen my views.
+
+Process:
+1. Steelman my argument first: Restate it in its strongest possible form to show you understand.
+2. Identify logical fallacies (ad hominem, strawman, sunk cost, appeal to authority, etc.).
+3. Highlight potential biases (confirmation bias, survivorship bias).
+4. Offer 3 distinct, strong counter-arguments backed by logic or potential evidence.
+5. Conclude with a 'Synthesis' question that challenges me to reconcile my view with your critique.
+
+Please start by asking me to state my controversial opinion.`
+            },
+            {
+                title: "The Python Bug Hunter",
+                category: "Coding",
+                content: `Act as a Senior Python Backend Engineer and Code Reviewer. I will provide a code snippet. You must perform a deep analysis:
+
+1. **Analyze**: Walk through the code execution step-by-step in natural language.
+2. **Identify Bugs**: Point out syntax errors, logical errors, or race conditions.
+3. **Performance Check**: Highlight O(n^2) operations, memory leaks, or unoptimized database queries.
+4. **Security Audit**: Highlight SQL injection risks, input validation issues, or insecure dependencies.
+5. **Refactor**: Provide the corrected, optimized, and PEP8 compliant code.
+6. **Explain**: Explain *why* the fix works and how to prevent this in the future.
+
+Please ask me to paste my Python code snippet.`
+            }
+        ];
+
+        const lockedPrompts = [
+            { title: "The Ultimate Copywriting Framework", category: "Marketing" },
+            { title: "Full-Stack Code Refactor Wizard", category: "Coding" },
+            { title: "Viral Thread Generator", category: "Social Media" },
+            { title: "Salary Negotiation Script", category: "Career" },
+            { title: "The 'Midjourney' Prompt Engineer", category: "AI Art" },
+            { title: "Complex Legal Document Simplifier", category: "Legal" },
+            { title: "The 'First Principles' Thinker", category: "Strategy" },
+            { title: "SEO Keyword Dominator", category: "Marketing" },
+            { title: "Recipe Reverse Engineer", category: "Lifestyle" },
+        ];
+
+        const faqs = [
+            {
+                question: "How do I receive the new prompts?",
+                answer: "Every week, we send a curated digest of new magical prompts directly to the email address you used to subscribe. We also provide a link to a private dashboard where you can browse the archives."
+            },
+            {
+                question: "Do these prompts work with the free version of ChatGPT?",
+                answer: "Yes! All our prompts are rigorously tested on both GPT-3.5 (Free) and GPT-4o. While GPT-4 often allows for more nuance, the core logic of our 'Out of the Box' prompts significantly enhances the free version."
+            },
+            {
+                question: "Can I cancel my subscription anytime?",
+                answer: "Absolutely. There are no lock-in contracts or hidden fees. You can cancel your subscription with one click from your email link or account settings, and you'll retain access until the end of your billing period."
+            },
+            {
+                question: "What makes these prompts 'Magical'?",
+                answer: "Most people use simple one-liners. Our prompts are complex, multi-step algorithms (Prompt Engineering) that instruct the AI to adopt specific personas, follow logical constraints, and critique its own work, unlocking capabilities you didn't know existed."
+            },
+            {
+                question: "I paid but didn't get an email. What do I do?",
+                answer: "First, check your spam or promotions folder. If it's not there, please email support@promptmagic.com with your transaction ID, and we'll resolve it immediately."
+            }
+        ];
+
+        // --- Functions ---
+
+        function scrollToSubscribe() {
+            document.getElementById('pricing').scrollIntoView({ behavior: 'smooth' });
         }
 
-        const container = document.getElementById('root');
-        const root = ReactDOM.createRoot(container);
-        root.render(<App />);
+        function handleSubscribe(plan) {
+            const link = paymentLinks[plan];
+            if (link) {
+                window.open(link, '_blank');
+            } else {
+                console.log("No payment link configured");
+            }
+        }
+
+        function copyToClipboard(text, btnId) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+            
+            try {
+                document.execCommand('copy');
+                const btn = document.getElementById(btnId);
+                const originalHtml = btn.innerHTML;
+                
+                // Change to success state
+                btn.className = "flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 border bg-green-500/20 border-green-500/50 text-green-400";
+                btn.innerHTML = `<i data-lucide="check" class="w-3.5 h-3.5"></i> Copied!`;
+                lucide.createIcons();
+
+                // Revert after 2 seconds
+                setTimeout(() => {
+                    btn.className = "flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 border bg-slate-800 border-slate-700 text-slate-400 hover:bg-purple-600 hover:text-white hover:border-purple-500";
+                    btn.innerHTML = originalHtml;
+                    lucide.createIcons();
+                }, 2000);
+
+            } catch (err) {
+                console.error('Failed to copy', err);
+            }
+            document.body.removeChild(textArea);
+        }
+
+        function togglePrompt(id) {
+            const contentDiv = document.getElementById(`prompt-content-${id}`);
+            const fadeDiv = document.getElementById(`prompt-fade-${id}`);
+            const btnText = document.getElementById(`prompt-btn-text-${id}`);
+            const icon = document.getElementById(`prompt-icon-${id}`);
+
+            // Currently expanded?
+            const isExpanded = contentDiv.classList.contains('max-h-[600px]');
+
+            if (isExpanded) {
+                // Collapse
+                contentDiv.classList.remove('max-h-[600px]', 'overflow-y-auto', 'custom-scrollbar');
+                contentDiv.classList.add('max-h-[140px]', 'overflow-hidden');
+                fadeDiv.style.display = 'block';
+                btnText.innerText = "Expand Prompt";
+                // We'll just re-render icon via lucide after changing HTML? simpler to swap classes if using SVG directly but Lucide replaces elements
+                // Simpler approach for vanilla JS icons: re-inject HTML
+                // For simplicity, let's keep text only or use lucide re-init which might be heavy.
+                // Or just toggle text.
+            } else {
+                // Expand
+                contentDiv.classList.remove('max-h-[140px]', 'overflow-hidden');
+                contentDiv.classList.add('max-h-[600px]', 'overflow-y-auto', 'custom-scrollbar');
+                fadeDiv.style.display = 'none';
+                btnText.innerText = "Show Less";
+            }
+        }
+        
+        function toggleFAQ(id) {
+            const content = document.getElementById(`faq-content-${id}`);
+            const icon = document.getElementById(`faq-icon-${id}`);
+            const questionText = document.getElementById(`faq-question-${id}`);
+            
+            // Check if open by checking height
+            if (content.classList.contains('max-h-0')) {
+                // Open
+                content.classList.remove('max-h-0', 'opacity-0');
+                content.classList.add('max-h-96', 'opacity-100', 'mb-6');
+                
+                // Rotate icon logic - replacing lucide icon logic with CSS transform class on parent span
+                document.getElementById(`faq-icon-wrapper-${id}`).classList.add('rotate-180');
+                questionText.classList.remove('text-slate-200');
+                questionText.classList.add('text-purple-400');
+                
+                // Swap icon visuals (plus to minus) logic could go here, or just rotate the plus 45deg to look like x, 
+                // but the design requested Minus.
+                // We will rely on CSS rotation of the plus icon or swap innerHTML. 
+                // Let's swap HTML for cleaner icons.
+                document.getElementById(`faq-icon-wrapper-${id}`).innerHTML = `<i data-lucide="minus" class="w-5 h-5 text-purple-400"></i>`;
+            } else {
+                // Close
+                content.classList.add('max-h-0', 'opacity-0');
+                content.classList.remove('max-h-96', 'opacity-100', 'mb-6');
+                
+                document.getElementById(`faq-icon-wrapper-${id}`).classList.remove('rotate-180');
+                questionText.classList.add('text-slate-200');
+                questionText.classList.remove('text-purple-400');
+                
+                document.getElementById(`faq-icon-wrapper-${id}`).innerHTML = `<i data-lucide="plus" class="w-5 h-5 text-slate-400 group-hover:text-purple-400"></i>`;
+            }
+            lucide.createIcons();
+        }
+
+        // --- Render Functions ---
+
+        function renderDemoPrompts() {
+            const container = document.getElementById('demo-container');
+            let html = '';
+            demoPrompts.forEach((prompt, index) => {
+                // Escape simple quotes for inline JS
+                const safeContent = prompt.content.replace(/`/g, "\\`").replace(/'/g, "\\'");
+                
+                html += `
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 hover:border-purple-500/50 hover:shadow-[0_0_30px_rgba(168,85,247,0.15)] hover:-translate-y-1 transition-all duration-300 group relative flex flex-col h-full">
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="text-xl font-bold text-white group-hover:text-purple-300 transition-colors">${prompt.title}</h3>
+                        <span class="px-3 py-1 bg-slate-800 rounded-full text-xs text-slate-400 border border-slate-700 whitespace-nowrap ml-2">
+                            ${prompt.category}
+                        </span>
+                    </div>
+                    
+                    <div id="prompt-content-${index}" class="relative bg-slate-950 p-4 rounded-xl border border-slate-800 font-mono text-sm text-slate-300 leading-relaxed mb-4 overflow-hidden transition-all duration-500 ease-in-out max-h-[140px]">
+                        <p class="whitespace-pre-line">${prompt.content}</p>
+                        <div id="prompt-fade-${index}" class="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-slate-950 via-slate-950/90 to-transparent pointer-events-none"></div>
+                    </div>
+                    
+                    <div class="mt-auto flex items-center justify-between pt-2">
+                        <button onclick="togglePrompt(${index})" class="text-purple-400 text-sm font-medium hover:text-purple-300 transition-colors flex items-center gap-1 focus:outline-none">
+                            <span id="prompt-btn-text-${index}">Expand Prompt</span> 
+                            <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                        </button>
+
+                        <button id="copy-btn-${index}" onclick="copyToClipboard(\`${safeContent}\`, 'copy-btn-${index}')" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 border bg-slate-800 border-slate-700 text-slate-400 hover:bg-purple-600 hover:text-white hover:border-purple-500">
+                            <i data-lucide="copy" class="w-3.5 h-3.5"></i> Copy
+                        </button>
+                    </div>
+                </div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function renderLockedPrompts() {
+            const container = document.getElementById('locked-container');
+            let html = '';
+            lockedPrompts.forEach((prompt, index) => {
+                html += `
+                <div class="relative group overflow-hidden rounded-2xl">
+                    <!-- Blur Overlay -->
+                    <div class="absolute inset-0 bg-slate-950/60 backdrop-blur-[6px] z-10 flex flex-col items-center justify-center p-6 text-center transition-all duration-300 group-hover:bg-slate-950/75 group-hover:backdrop-blur-[8px]">
+                        <div class="bg-purple-500/10 p-3 rounded-full mb-3 group-hover:scale-110 transition-transform duration-300">
+                            <i data-lucide="lock" class="h-6 w-6 text-purple-400"></i>
+                        </div>
+                        <p class="text-white font-semibold mb-2 translate-y-2 group-hover:translate-y-0 transition-transform duration-300">Subscriber Only</p>
+                        <button onclick="scrollToSubscribe()" class="text-xs bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded-lg transition-all opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 duration-300 shadow-lg shadow-purple-500/20">
+                            Unlock for ₹9
+                        </button>
+                    </div>
+
+                    <!-- Card Content (Visible underneath) -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 h-full flex flex-col opacity-40 group-hover:opacity-30 transition-opacity">
+                        <div class="flex justify-between items-start mb-4">
+                            <h3 class="text-xl font-bold text-white">${prompt.title}</h3>
+                            <span class="px-3 py-1 bg-slate-800 rounded-full text-xs text-slate-400 border border-slate-700">
+                                ${prompt.category}
+                            </span>
+                        </div>
+                        <div class="flex-grow space-y-2">
+                            <div class="h-4 bg-slate-800 rounded w-3/4"></div>
+                            <div class="h-4 bg-slate-800 rounded w-full"></div>
+                            <div class="h-4 bg-slate-800 rounded w-5/6"></div>
+                            <div class="h-4 bg-slate-800 rounded w-4/5"></div>
+                        </div>
+                    </div>
+                </div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function renderFAQs() {
+            const container = document.getElementById('faq-container');
+            let html = '';
+            faqs.forEach((faq, index) => {
+                html += `
+                <div class="border-b border-slate-800 last:border-none">
+                    <button onclick="toggleFAQ(${index})" class="w-full py-6 flex items-center justify-between text-left focus:outline-none group">
+                        <span id="faq-question-${index}" class="text-lg font-medium transition-colors text-slate-200 group-hover:text-purple-300">
+                            ${faq.question}
+                        </span>
+                        <span id="faq-icon-wrapper-${index}" class="ml-6 flex-shrink-0 transition-transform duration-300">
+                            <i data-lucide="plus" class="w-5 h-5 text-slate-400 group-hover:text-purple-400"></i>
+                        </span>
+                    </button>
+                    <div id="faq-content-${index}" class="overflow-hidden transition-all duration-300 ease-in-out max-h-0 opacity-0">
+                        <p class="text-slate-400 leading-relaxed pr-8">
+                            ${faq.answer}
+                        </p>
+                    </div>
+                </div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        // --- Init ---
+        document.addEventListener('DOMContentLoaded', () => {
+            renderDemoPrompts();
+            renderLockedPrompts();
+            renderFAQs();
+            lucide.createIcons();
+        });
+
     </script>
-    <style>
-      @keyframes fade-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-      .animate-fade-in { animation: fade-in 0.5s ease-out forwards; }
-    </style>
 </body>
 </html>
