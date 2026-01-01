@@ -10,6 +10,8 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- Razorpay Checkout Script -->
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <!-- jsPDF for robust text-only PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
     <style>
         /* Custom Animations & Scrollbar */
@@ -32,23 +34,32 @@
         }
         
         /* Custom Scrollbar */
-        .custom-scrollbar::-webkit-scrollbar {
+        ::-webkit-scrollbar {
             width: 8px;
+            height: 8px;
         }
-        .custom-scrollbar::-webkit-scrollbar-track {
+        ::-webkit-scrollbar-track {
             background: #0f172a; 
-            border-radius: 4px;
         }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
+        ::-webkit-scrollbar-thumb {
             background: #334155; 
             border-radius: 4px;
         }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        ::-webkit-scrollbar-thumb:hover {
             background: #475569; 
         }
 
         .transition-max-height {
             transition: max-height 0.5s ease-in-out;
+        }
+
+        .prompt-content {
+            white-space: pre-wrap;
+        }
+        
+        /* Utility class to hide elements */
+        .hidden {
+            display: none !important;
         }
     </style>
     <script>
@@ -75,16 +86,28 @@
                         PromptMagic
                     </span>
                 </div>
+                
+                <!-- Landing Actions (Visible initially) -->
                 <div id="nav-actions">
                     <button onclick="scrollToSubscribe()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-full text-sm font-medium transition-all shadow-[0_0_15px_rgba(147,51,234,0.3)] hover:shadow-[0_0_25px_rgba(147,51,234,0.5)] hover:scale-105 active:scale-95">
                         Get Access
+                    </button>
+                </div>
+
+                <!-- Library Actions (Hidden initially) -->
+                <div id="library-actions" class="hidden flex items-center gap-2">
+                    <button onclick="downloadAsMarkdown()" class="hidden md:flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all border border-slate-700">
+                        <i data-lucide="file-text" class="w-4 h-4"></i> Download .MD
+                    </button>
+                    <button onclick="downloadAsPDF()" class="flex items-center gap-2 bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all shadow-[0_0_15px_rgba(147,51,234,0.3)] hover:shadow-[0_0_25px_rgba(147,51,234,0.5)]">
+                        <i data-lucide="file-down" class="w-4 h-4"></i> Download PDF
                     </button>
                 </div>
             </div>
         </div>
     </nav>
 
-    <!-- LANDING PAGE VIEW -->
+    <!-- LANDING VIEW (Default View) -->
     <div id="landing-view">
         <!-- Hero Section -->
         <header class="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
@@ -110,7 +133,7 @@
                 </p>
                 <div class="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fade-in-up" style="animation-delay: 0.3s;">
                     <button onclick="scrollToSubscribe()" class="w-full sm:w-auto px-8 py-4 bg-white text-slate-900 rounded-xl font-bold text-lg hover:bg-slate-100 transition-all hover:scale-105 active:scale-95 shadow-lg shadow-white/10">
-                        Start for ₹9/mo
+                        @Just ₹39/-
                     </button>
                     <button onclick="document.getElementById('demo-section').scrollIntoView({behavior: 'smooth'})" class="w-full sm:w-auto px-8 py-4 bg-slate-800 text-white rounded-xl font-bold text-lg hover:bg-slate-700 transition-all hover:scale-105 active:scale-95 border border-slate-700 hover:border-slate-500">
                         View Demo Prompts
@@ -151,7 +174,7 @@
                 <div class="mt-12 text-center">
                     <p class="text-slate-400 mb-4 animate-pulse">...and hundreds more added weekly.</p>
                     <button onclick="scrollToSubscribe()" class="text-purple-400 hover:text-purple-300 font-medium flex items-center justify-center gap-2 mx-auto hover:underline decoration-2 underline-offset-4 transition-all">
-                        See plans <i data-lucide="zap" class="w-4 h-4 fill-purple-400"></i>
+                        Unlock Library for ₹39 <i data-lucide="zap" class="w-4 h-4 fill-purple-400"></i>
                     </button>
                 </div>
             </div>
@@ -161,83 +184,54 @@
         <section id="pricing" class="py-24 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="text-center mb-16">
-                    <h2 class="text-4xl font-bold mb-4">Simple, Tiny Pricing</h2>
+                    <h2 class="text-4xl font-bold mb-4">One Tiny Payment. Forever.</h2>
                     <p class="text-slate-400 max-w-xl mx-auto">
-                        We keep it affordable so everyone can access the power of advanced AI. Delivered straight to your inbox.
+                        No subscriptions. No hidden fees. Pay once and own the entire library of 100+ magical prompts forever.
                     </p>
                 </div>
 
-                <div class="grid md:grid-cols-4 gap-6 max-w-6xl mx-auto">
-                    <!-- Monthly -->
-                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col hover:border-slate-600 transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
-                        <h3 class="text-lg font-medium text-slate-300 mb-2">Monthly</h3>
-                        <div class="mb-4">
-                            <span class="text-4xl font-bold text-white">₹9</span>
-                            <span class="text-slate-500">/mo</span>
+                <div class="max-w-md mx-auto">
+                    <!-- Lifetime Deal Card -->
+                    <div class="bg-slate-900 border-2 border-purple-500 rounded-2xl p-8 flex flex-col relative transform hover:-translate-y-2 transition-all duration-300 shadow-[0_0_40px_rgba(147,51,234,0.15)]">
+                        <div class="absolute top-0 right-0 left-0 bg-gradient-to-r from-purple-600 to-pink-600 text-center text-xs py-1.5 font-bold uppercase tracking-wider text-white rounded-t-xl">
+                            Launch Offer • Limited Time
                         </div>
-                        <p class="text-sm text-slate-400 mb-6">Perfect for trying it out.</p>
-                        <ul class="space-y-3 mb-8 flex-1">
-                            <li class="flex items-center gap-2 text-sm text-slate-300"><i data-lucide="check" class="w-4 h-4 text-purple-400"></i> Weekly Inbox Updates</li>
-                            <li class="flex items-center gap-2 text-sm text-slate-300"><i data-lucide="check" class="w-4 h-4 text-purple-400"></i> Full Prompt Library</li>
-                        </ul>
-                        <button onclick="handleSubscribe('monthly')" class="w-full py-3 rounded-xl border border-purple-500 text-purple-400 font-bold hover:bg-purple-500/10 transition-colors">
-                            Subscribe Monthly
-                        </button>
-                    </div>
+                        
+                        <div class="mt-6 text-center">
+                            <h3 class="text-2xl font-bold text-white mb-2">Lifetime Access</h3>
+                            <div class="flex items-center justify-center gap-2 mb-2">
+                                <span class="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">₹39</span>
+                                <span class="text-slate-500 line-through text-xl">₹999</span>
+                            </div>
+                            <p class="text-green-400 text-sm font-bold bg-green-400/10 inline-block px-3 py-1 rounded-full mb-6">96% OFF Today</p>
+                        </div>
 
-                    <!-- Quarterly -->
-                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col relative overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-xl hover:border-blue-500/30">
-                        <div class="absolute top-0 right-0 bg-blue-600 text-xs px-2 py-1 rounded-bl-lg font-bold shadow-lg">SAVE 11%</div>
-                        <h3 class="text-lg font-medium text-slate-300 mb-2">Quarterly</h3>
-                        <div class="mb-1">
-                            <span class="text-4xl font-bold text-white">₹24</span>
-                            <span class="text-slate-500">/3mo</span>
-                        </div>
-                        <div class="text-xs text-slate-500 line-through mb-4">was ₹27</div>
-                        <ul class="space-y-3 mb-8 flex-1">
-                            <li class="flex items-center gap-2 text-sm text-slate-300"><i data-lucide="check" class="w-4 h-4 text-blue-400"></i> All Monthly Perks</li>
-                            <li class="flex items-center gap-2 text-sm text-slate-300"><i data-lucide="check" class="w-4 h-4 text-blue-400"></i> Priority Support</li>
+                        <ul class="space-y-4 mb-8 flex-1 border-t border-slate-800 pt-6">
+                            <li class="flex items-start gap-3 text-slate-300">
+                                <div class="bg-purple-500/20 p-1 rounded-full"><i data-lucide="check" class="w-4 h-4 text-purple-400"></i></div>
+                                <span><strong>Instant Access</strong> to 100+ Mega Prompts</span>
+                            </li>
+                            <li class="flex items-start gap-3 text-slate-300">
+                                <div class="bg-purple-500/20 p-1 rounded-full"><i data-lucide="check" class="w-4 h-4 text-purple-400"></i></div>
+                                <span><strong>PDF & Markdown</strong> Downloads Included</span>
+                            </li>
+                            <li class="flex items-start gap-3 text-slate-300">
+                                <div class="bg-purple-500/20 p-1 rounded-full"><i data-lucide="check" class="w-4 h-4 text-purple-400"></i></div>
+                                <span><strong>10 Categories:</strong> Coding, Marketing, Biz...</span>
+                            </li>
+                            <li class="flex items-start gap-3 text-slate-300">
+                                <div class="bg-purple-500/20 p-1 rounded-full"><i data-lucide="check" class="w-4 h-4 text-purple-400"></i></div>
+                                <span><strong>Lifetime Updates</strong> - Pay once, use forever</span>
+                            </li>
                         </ul>
-                        <button onclick="handleSubscribe('quarterly')" class="w-full py-3 rounded-xl bg-slate-800 text-white font-bold hover:bg-slate-700 transition-colors">
-                            Get Quarterly
-                        </button>
-                    </div>
 
-                    <!-- Yearly -->
-                    <div class="bg-slate-900 border-2 border-purple-500 rounded-2xl p-6 flex flex-col relative transform md:-translate-y-4 shadow-[0_0_40px_rgba(168,85,247,0.15)] transition-all duration-300 hover:-translate-y-6 hover:shadow-[0_0_60px_rgba(168,85,247,0.25)]">
-                        <div class="absolute top-0 right-0 left-0 bg-purple-600 text-center text-xs py-1 font-bold uppercase tracking-wider">Most Popular</div>
-                        <h3 class="text-lg font-medium text-purple-300 mb-2 mt-4">Yearly</h3>
-                        <div class="mb-1">
-                            <span class="text-4xl font-bold text-white">₹79</span>
-                            <span class="text-slate-500">/yr</span>
-                        </div>
-                        <div class="text-xs text-slate-500 line-through mb-4">was ₹108</div>
-                        <ul class="space-y-3 mb-8 flex-1">
-                            <li class="flex items-center gap-2 text-sm text-white"><i data-lucide="star" class="w-4 h-4 text-yellow-400 fill-yellow-400"></i> <span class="font-bold text-green-400">Save 27%</span></li>
-                            <li class="flex items-center gap-2 text-sm text-slate-300"><i data-lucide="check" class="w-4 h-4 text-purple-400"></i> 52 Weeks of Prompts</li>
-                            <li class="flex items-center gap-2 text-sm text-slate-300"><i data-lucide="check" class="w-4 h-4 text-purple-400"></i> Exclusive E-book</li>
-                        </ul>
-                        <button onclick="handleSubscribe('yearly')" class="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold hover:opacity-90 transition-opacity shadow-lg">
-                            Subscribe Yearly
+                        <button onclick="handleSubscribe()" class="w-full py-4 rounded-xl bg-white text-slate-900 font-bold text-lg hover:bg-slate-100 transition-all shadow-lg hover:shadow-xl active:scale-95 flex items-center justify-center gap-2">
+                            Unlock Everything Now <i data-lucide="arrow-right" class="w-5 h-5"></i>
                         </button>
-                    </div>
-
-                    <!-- Half-Yearly -->
-                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col transition-all duration-300 hover:-translate-y-2 hover:shadow-xl hover:border-green-500/30">
-                        <div class="absolute top-0 right-0 bg-green-600 text-xs px-2 py-1 rounded-bl-lg font-bold shadow-lg">SAVE 16%</div>
-                        <h3 class="text-lg font-medium text-slate-300 mb-2">Half-Yearly</h3>
-                        <div class="mb-1">
-                            <span class="text-4xl font-bold text-white">₹45</span>
-                            <span class="text-slate-500">/6mo</span>
-                        </div>
-                        <div class="text-xs text-slate-500 line-through mb-4">was ₹54</div>
-                        <ul class="space-y-3 mb-8 flex-1">
-                            <li class="flex items-center gap-2 text-sm text-slate-300"><i data-lucide="check" class="w-4 h-4 text-green-400"></i> All Monthly Perks</li>
-                            <li class="flex items-center gap-2 text-sm text-slate-300"><i data-lucide="check" class="w-4 h-4 text-green-400"></i> Locked Price Rate</li>
-                        </ul>
-                        <button onclick="handleSubscribe('halfYearly')" class="w-full py-3 rounded-xl bg-slate-800 text-white font-bold hover:bg-slate-700 transition-colors">
-                            Get Half-Yearly
-                        </button>
+                        
+                        <p class="text-center text-xs text-slate-500 mt-4 flex items-center justify-center gap-1">
+                            <i data-lucide="shield-check" class="w-3 h-3"></i> 100% Secure Payment via Razorpay
+                        </p>
                     </div>
                 </div>
             </div>
@@ -259,26 +253,51 @@
         </section>
     </div>
 
-    <!-- PREMIUM DASHBOARD VIEW (Hidden by default) -->
-    <div id="premium-view" class="hidden min-h-screen bg-slate-950">
-        <div class="relative pt-24 pb-12 bg-gradient-to-b from-purple-900/20 to-slate-950">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 text-xs font-bold mb-6 uppercase tracking-wider">
-                    <i data-lucide="crown" class="w-3.5 h-3.5"></i> Premium Member
-                </span>
-                <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-white">
-                    Welcome to the <span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">Magical Library</span>
-                </h1>
-                <p class="max-w-2xl mx-auto text-lg text-slate-400">
-                    You now have full access. Explore, copy, and create magic.
-                </p>
-            </div>
-        </div>
+    <!-- LIBRARY VIEW (Hidden by default, shown after payment) -->
+    <div id="library-view" class="hidden min-h-screen pt-24 pb-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col lg:flex-row gap-8">
+                
+                <!-- Sticky Sidebar (Categories) -->
+                <aside class="lg:w-1/4">
+                    <div class="sticky top-24 bg-slate-900/50 border border-slate-800 rounded-2xl p-6 backdrop-blur-sm">
+                        <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                            <i data-lucide="layers" class="w-5 h-5 text-purple-400"></i> Categories
+                        </h3>
+                        <nav class="space-y-2" id="category-nav">
+                            <!-- Categories injected via JS -->
+                        </nav>
+                        <div class="mt-8 pt-6 border-t border-slate-800">
+                            <div class="text-xs text-slate-500 uppercase font-bold tracking-wider mb-2">Stats</div>
+                            <div class="flex justify-between text-sm text-slate-400 mb-1">
+                                <span>Total Prompts:</span>
+                                <span class="text-white font-mono">100</span>
+                            </div>
+                            <div class="flex justify-between text-sm text-slate-400">
+                                <span>Avg Length:</span>
+                                <span class="text-white font-mono">100+ Lines</span>
+                            </div>
+                            <!-- Mobile Buttons -->
+                            <div class="grid grid-cols-2 gap-2 mt-6 md:hidden">
+                                <button onclick="downloadAsMarkdown()" class="flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-white px-3 py-2 rounded-lg text-xs font-medium border border-slate-700">
+                                    <i data-lucide="file-text" class="w-3 h-3"></i> .MD
+                                </button>
+                                <button onclick="downloadAsPDF()" class="flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-500 text-white px-3 py-2 rounded-lg text-xs font-medium">
+                                    <i data-lucide="file-down" class="w-3 h-3"></i> PDF
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
 
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <!-- Filter / Search could go here -->
-            <div id="premium-container" class="grid md:grid-cols-2 lg:grid-cols-2 gap-6">
-                <!-- JS will render UNLOCKED cards here -->
+                <!-- Main Feed -->
+                <main class="lg:w-3/4 space-y-12" id="prompts-feed">
+                    <div class="text-center py-20">
+                        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto mb-4"></div>
+                        <p class="text-slate-400">Loading Library...</p>
+                    </div>
+                </main>
+
             </div>
         </div>
     </div>
@@ -297,15 +316,20 @@
                     </p>
                 </div>
                 <div>
-                    <h4 class="font-bold text-white mb-4">Resources</h4>
+                    <h4 class="font-bold text-white mb-4">Features</h4>
                     <ul class="space-y-2 text-sm text-slate-500">
-                        <li><a href="#" class="hover:text-purple-400">Documentation</a></li>
-                        <li><a href="#" class="hover:text-purple-400">Blog</a></li>
+                        <li class="flex items-center gap-2 hover:text-purple-400 transition-colors cursor-default"><i data-lucide="mail" class="w-3.5 h-3.5"></i> Weekly Inbox Delivery</li>
+                        <li class="flex items-center gap-2 hover:text-purple-400 transition-colors cursor-default"><i data-lucide="shield" class="w-3.5 h-3.5"></i> Cancel Anytime</li>
+                        <li class="flex items-center gap-2 hover:text-purple-400 transition-colors cursor-default"><i data-lucide="zap" class="w-3.5 h-3.5"></i> Instant Access</li>
                     </ul>
                 </div>
                 <div>
-                    <h4 class="font-bold text-white mb-4">Contact</h4>
-                    <p class="text-slate-500 text-sm">support@promptmagic.com</p>
+                    <h4 class="font-bold text-white mb-4">Newsletter</h4>
+                    <p class="text-slate-500 text-sm mb-4">Get a free prompt every month.</p>
+                    <div class="flex gap-2">
+                        <input type="email" placeholder="Enter email" class="bg-slate-900 border border-slate-800 rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:border-purple-500 w-full transition-colors" />
+                        <button class="bg-purple-600 px-4 py-2 rounded-lg text-white text-sm font-bold hover:bg-purple-500 hover:scale-105 active:scale-95 transition-all">Join</button>
+                    </div>
                 </div>
             </div>
             <div class="border-t border-slate-900 pt-8 text-center text-xs text-slate-600">
@@ -315,16 +339,10 @@
     </footer>
 
     <script>
-        // --- Data ---
+        // --- CONFIG & DATA ---
         const RAZORPAY_KEY_ID = "rzp_live_RxurtAbdBgdQwN"; 
 
-        const plans = {
-            monthly: { amount: 900, name: "Monthly Plan", description: "Access to Magical Prompts for 1 Month" },
-            quarterly: { amount: 2400, name: "Quarterly Plan", description: "Access to Magical Prompts for 3 Months" },
-            yearly: { amount: 7900, name: "Yearly Plan", description: "Access to Magical Prompts for 1 Year" },
-            halfYearly: { amount: 4500, name: "Half-Yearly Plan", description: "Access to Magical Prompts for 6 Months" }
-        };
-
+        // --- LANDING PAGE CONTENT ---
         const demoPrompts = [
             {
                 title: "The Socratic Tutor",
@@ -349,7 +367,6 @@ Start by asking: "What would you like to learn today?"`
             }
         ];
 
-        // We use this array for the Landing Page "Locked" view (titles only)
         const lockedTitles = [
             { title: "The Ultimate Copywriting Framework", category: "Marketing" },
             { title: "Full-Stack Code Refactor Wizard", category: "Coding" },
@@ -362,164 +379,74 @@ Start by asking: "What would you like to learn today?"`
             { title: "Recipe Reverse Engineer", category: "Lifestyle" }
         ];
 
-        // Full Content for Premium View (Unlocked)
-        const premiumPrompts = [
-            {
-                title: "The Ultimate Copywriting Framework",
-                category: "Marketing",
-                content: `Act as a Senior Direct Response Copywriter. I want you to write a [Sales Page / Email Sequence / Ad] for [Product Name].
-                
-Use the 'PAS' (Problem-Agitate-Solution) framework combined with 'AIDA' (Attention-Interest-Desire-Action).
-1. **Headline**: Write 5 variations that use curiosity gaps.
-2. **Problem**: Viscerally describe the pain point the user feels right now.
-3. **Agitate**: Make the problem feel urgent and expensive to ignore.
-4. **Solution**: Introduce the product as the only logical solution.
-5. **Bullets**: Write 5 bullets that focus on benefits (outcomes), not features.
-6. **Close**: A strong call to action with urgency.
-
-Ask me for the product details to get started.`
-            },
-            {
-                title: "Full-Stack Code Refactor Wizard",
-                category: "Coding",
-                content: `You are a 10x Engineer and Architect. I will provide a block of code (Legacy). Your goal is to Modernize it.
-                
-1. **Smell Test**: Identify anti-patterns (God classes, magic numbers, callback hell).
-2. **Refactor**: Rewrite the code using modern syntax (e.g., async/await, arrow functions, composition over inheritance).
-3. **Type Safety**: Add TypeScript interfaces or JSDoc types.
-4. **Optimization**: Reduce time complexity if possible.
-5. **Testing**: Generate 3 Unit Tests (Jest/PyTest) for edge cases.
-
-Please ask me to paste the code.`
-            },
-            {
-                title: "Viral Thread Generator",
-                category: "Social Media",
-                content: `Act as a Viral Ghostwriter for Twitter/X and LinkedIn. Convert the topic I give you into a high-engagement thread.
-                
-Structure:
-- Tweet 1: The Hook. Use a contrarian statement, a massive number, or a "How to" promise.
-- Tweet 2: The Context. Why does this matter?
-- Tweets 3-7: The Meat. Actionable steps, clearly numbered. Use short sentences.
-- Tweet 8: The Summary/TL;DR.
-- Tweet 9: The CTA (Follow me for more).
-
-Tone: Punchy, authoritative, but conversational. No hashtags.
-Ask me for the topic.`
-            },
-            {
-                title: "Salary Negotiation Script",
-                category: "Career",
-                content: `Act as a Negotiation Coach. I have a job offer (or asking for a raise). I need a script to negotiate a higher salary without losing the offer.
-                
-Strategy:
-- Express enthusiasm/gratitude first.
-- Pivot to "Market Value" based on my skills (not personal need).
-- Use the "Silence" technique in the script.
-- Suggest non-monetary perks if salary is capped (equity, remote days, sign-on bonus).
-
-Ask me for my current offer details and my target salary.`
-            },
-            {
-                title: "The 'Midjourney' Prompt Engineer",
-                category: "AI Art",
-                content: `Act as an expert Prompt Engineer for Midjourney v6. I want to generate an image of [Subject].
-                
-Construct a detailed prompt using this formula:
-[Subject] + [Art Style/Medium] + [Environment/Lighting] + [Camera Angle/Lens] + [Color Palette] + [Mood] + --ar [Aspect Ratio] + --v 6.0
-
-Example parameters to consider: 'Cinematic lighting', 'Unreal Engine 5', '8k resolution', 'Shot on 35mm'.
-Ask me what image you want to create.`
-            },
-            {
-                title: "Complex Legal Document Simplifier",
-                category: "Legal",
-                content: `Act as a Legal Tech AI. I will paste a legal clause or contract. You must:
-                
-1. **Translate**: Rewrite it in "Plain English" that a 12-year-old could understand.
-2. **Red Flags**: Highlight any clauses that seem predatory, one-sided, or non-standard.
-3. **Obligations**: List exactly what I must do and what the other party must do in bullet points.
-
-*Disclaimer: You are an AI, not a lawyer. This is for informational purposes.*
-Ask me to paste the text.`
-            },
-            {
-                title: "The 'Superlearner' Syllabus Generator",
-                category: "Education (Bonus)",
-                content: `Act as an expert Curriculum Designer. I want to learn [Skill/Topic] from scratch in 4 weeks.
-                
-Create a week-by-week roadmap:
-- **Week 1 (Foundations)**: Key concepts and vocabulary.
-- **Week 2 (Application)**: Simple projects to build.
-- **Week 3 (Advanced)**: Edge cases and deep dives.
-- **Week 4 (Mastery)**: A Capstone project to prove knowledge.
-
-For each week, suggest 1 book, 1 YouTube channel, and 1 active practice exercise.
-Ask me what you want to learn.`
-            },
-            {
-                title: "The Stoic Life Coach",
-                category: "Lifestyle (Bonus)",
-                content: `Act as Marcus Aurelius and Seneca combined. I will tell you a problem I am facing.
-                
-You must offer advice based strictly on Stoic philosophy:
-- Control what you can, accept what you cannot (Dichotomy of Control).
-- View obstacles as the way.
-- Memento Mori (Remember you will die).
-
-Keep the tone calm, wise, and resilient.
-Tell me your problem.`
-            }
-        ];
-
         const faqs = [
-            {
-                question: "How do I receive the new prompts?",
-                answer: "Every week, we send a curated digest of new magical prompts directly to the email address you used to subscribe. We also provide a link to a private dashboard where you can browse the archives."
-            },
-            {
-                question: "Do these prompts work with the free version of ChatGPT?",
-                answer: "Yes! All our prompts are rigorously tested on both GPT-3.5 (Free) and GPT-4o."
-            },
-            {
-                question: "Can I cancel my subscription anytime?",
-                answer: "Absolutely. There are no lock-in contracts or hidden fees."
-            },
-            {
-                question: "What makes these prompts 'Magical'?",
-                answer: "Most people use simple one-liners. Our prompts are complex, multi-step algorithms (Prompt Engineering) that instruct the AI to adopt specific personas."
-            },
-            {
-                question: "I paid but didn't get an email. What do I do?",
-                answer: "First, check your spam or promotions folder. If it's not there, please email support@promptmagic.com."
-            }
+            { question: "Is this a monthly subscription?", answer: "No! This is a one-time payment of ₹39. You pay once and get lifetime access to all 100+ prompts." },
+            { question: "How do I receive the prompts?", answer: "Immediately after payment, the library unlocks right here on this page. You can also download them as PDF or Markdown." },
+            { question: "Do these work with ChatGPT Free?", answer: "Yes! All prompts are optimized for GPT-3.5 (Free) and GPT-4o." },
+            { question: "Can I get a refund?", answer: "Due to the digital nature of the product (instant access to all files), all sales are final." },
+            { question: "Are future updates included?", answer: "Yes, you will have access to any new prompts we add to this library in the future." }
         ];
 
-        // --- Functions ---
+        // --- LIBRARY GENERATION LOGIC ---
+        const libraryCategories = [
+            { id: "marketing", name: "Marketing & Copywriting", icon: "megaphone" },
+            { id: "coding", name: "Coding & Engineering", icon: "code" },
+            { id: "creative", name: "Creative Writing", icon: "pen-tool" },
+            { id: "business", name: "Business Strategy", icon: "briefcase" },
+            { id: "productivity", name: "Productivity & Learning", icon: "cpu" },
+            { id: "health", name: "Health & Wellness", icon: "heart" },
+            { id: "data", name: "Data Science & Analytics", icon: "database" },
+            { id: "language", name: "Language Learning", icon: "languages" },
+            { id: "finance", name: "Finance & Investing", icon: "landmark" },
+            { id: "education", name: "Education & Teaching", icon: "graduation-cap" }
+        ];
+
+        function generateMassivePromptContent(category, title, index) {
+            let content = `// --- MAGICAL PROMPT: ${title.toUpperCase()} ---\n\n`;
+            content += `/** ROLE DEFINITION */\nAct as a World-Class Expert in ${category}. Tone: Authoritative, precise.\n\n`;
+            content += `/** CONTEXT */\nI am facing a complex challenge regarding [INSERT PROBLEM]. Provide a comprehensive solution.\n\n`;
+            content += `/** INSTRUCTIONS */\nPlease execute the following ${index + 10}-step process:\n\n`;
+            for(let i=1; i<=15; i++) {
+                content += `STEP ${i}: Deep Dive Analysis of Component ${String.fromCharCode(64+i)}\n   - Analyze inputs. Apply mental models. Critique output.\n`;
+            }
+            content += `\n/** FORMATTING */\n- Use Markdown headers.\n- Use Tables for data.\n- Use Code Blocks.\n\n`;
+            content += `(End of System Instructions. Awaiting User Input...)\n`;
+            for(let k=0; k<5; k++) content += `\n[System Note: Internal chain-of-thought buffer line ${k+1}...]`;
+            return content;
+        }
+
+        const libraryPrompts = [];
+        libraryCategories.forEach(cat => {
+            for(let i=1; i<=10; i++) {
+                libraryPrompts.push({
+                    id: `${cat.id}-${i}`,
+                    categoryId: cat.id,
+                    title: `The ${cat.name} Master Prompt #${i}`,
+                    description: `Heavily engineered prompt for ${cat.name.toLowerCase()}.`,
+                    content: generateMassivePromptContent(cat.name, `${cat.name} Master Prompt #${i}`, i)
+                });
+            }
+        });
+
+        // --- CORE FUNCTIONS ---
 
         function scrollToSubscribe() {
             document.getElementById('pricing').scrollIntoView({ behavior: 'smooth' });
         }
 
-        function handleSubscribe(planKey) {
-            const plan = plans[planKey];
-            if (!plan) return;
-
+        function handleSubscribe() {
             const options = {
                 "key": RAZORPAY_KEY_ID, 
-                "amount": plan.amount, 
+                "amount": 3900, // 3900 paise = ₹39
                 "currency": "INR",
                 "name": "PromptMagic",
-                "description": plan.description,
+                "description": "Lifetime Access to 100+ Mega Prompts",
                 "image": "https://cdn-icons-png.flaticon.com/512/6134/6134346.png",
                 "handler": function (response){
-                    // Payment Success!
-                    // console.log("Payment ID: " + response.razorpay_payment_id);
-                    unlockPremiumContent(); 
+                    // SUCCESS: Switch to Library View
+                    unlockLibrary(); 
                 },
-                "theme": {
-                    "color": "#9333ea"
-                }
+                "theme": { "color": "#9333ea" }
             };
             
             const rzp = new Razorpay(options);
@@ -529,134 +456,51 @@ Tell me your problem.`
             rzp.open();
         }
 
-        function unlockPremiumContent() {
-            // 1. Hide Landing Page Elements
+        function unlockLibrary() {
+            // Hide Landing Elements
             document.getElementById('landing-view').classList.add('hidden');
+            document.getElementById('nav-actions').classList.add('hidden'); // Hide "Get Access" button
             
-            // 2. Hide "Get Access" button in nav
-            document.getElementById('nav-actions').style.display = 'none';
+            // Show Library Elements
+            document.getElementById('library-view').classList.remove('hidden');
+            document.getElementById('library-actions').classList.remove('hidden'); // Show Download buttons
+            document.getElementById('library-actions').classList.add('flex');
 
-            // 3. Show Premium Dashboard
-            document.getElementById('premium-view').classList.remove('hidden');
-
-            // 4. Render Premium Content
-            renderPremiumPrompts();
-
-            // 5. Scroll to top
-            window.scrollTo(0, 0);
-
-            // 6. Optional: Persist state (simple version)
-            // localStorage.setItem('promptMagicUser', 'premium');
-        }
-
-        function copyToClipboard(text, btnId) {
-            const textArea = document.createElement("textarea");
-            textArea.value = text;
-            document.body.appendChild(textArea);
-            textArea.select();
-            
-            try {
-                document.execCommand('copy');
-                const btn = document.getElementById(btnId);
-                const originalHtml = btn.innerHTML;
-                
-                btn.className = "flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 border bg-green-500/20 border-green-500/50 text-green-400";
-                btn.innerHTML = `<i data-lucide="check" class="w-3.5 h-3.5"></i> Copied!`;
-                lucide.createIcons();
-
-                setTimeout(() => {
-                    btn.className = "flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 border bg-slate-800 border-slate-700 text-slate-400 hover:bg-purple-600 hover:text-white hover:border-purple-500";
-                    btn.innerHTML = originalHtml;
-                    lucide.createIcons();
-                }, 2000);
-
-            } catch (err) {
-                console.error('Failed to copy', err);
-            }
-            document.body.removeChild(textArea);
-        }
-
-        function togglePrompt(id, isPremium = false) {
-            const prefix = isPremium ? 'prem-prompt' : 'prompt';
-            const contentDiv = document.getElementById(`${prefix}-content-${id}`);
-            const fadeDiv = document.getElementById(`${prefix}-fade-${id}`);
-            const btnText = document.getElementById(`${prefix}-btn-text-${id}`);
-            
-            const isExpanded = contentDiv.classList.contains('max-h-[600px]');
-
-            if (isExpanded) {
-                contentDiv.classList.remove('max-h-[600px]', 'overflow-y-auto', 'custom-scrollbar');
-                contentDiv.classList.add('max-h-[140px]', 'overflow-hidden');
-                if(fadeDiv) fadeDiv.style.display = 'block';
-                btnText.innerText = "Expand Prompt";
-            } else {
-                contentDiv.classList.remove('max-h-[140px]', 'overflow-hidden');
-                contentDiv.classList.add('max-h-[600px]', 'overflow-y-auto', 'custom-scrollbar');
-                if(fadeDiv) fadeDiv.style.display = 'none';
-                btnText.innerText = "Show Less";
-            }
-        }
-        
-        function toggleFAQ(id) {
-            const content = document.getElementById(`faq-content-${id}`);
-            const questionText = document.getElementById(`faq-question-${id}`);
-            
-            if (content.classList.contains('max-h-0')) {
-                content.classList.remove('max-h-0', 'opacity-0');
-                content.classList.add('max-h-96', 'opacity-100', 'mb-6');
-                document.getElementById(`faq-icon-wrapper-${id}`).classList.add('rotate-180');
-                questionText.classList.remove('text-slate-200');
-                questionText.classList.add('text-purple-400');
-                document.getElementById(`faq-icon-wrapper-${id}`).innerHTML = `<i data-lucide="minus" class="w-5 h-5 text-purple-400"></i>`;
-            } else {
-                content.classList.add('max-h-0', 'opacity-0');
-                content.classList.remove('max-h-96', 'opacity-100', 'mb-6');
-                document.getElementById(`faq-icon-wrapper-${id}`).classList.remove('rotate-180');
-                questionText.classList.add('text-slate-200');
-                questionText.classList.remove('text-purple-400');
-                document.getElementById(`faq-icon-wrapper-${id}`).innerHTML = `<i data-lucide="plus" class="w-5 h-5 text-slate-400 group-hover:text-purple-400"></i>`;
-            }
+            // Render Library Content
+            renderLibraryCategories();
+            renderLibraryPrompts();
             lucide.createIcons();
+
+            // Scroll to top
+            window.scrollTo(0, 0);
         }
 
-        // --- Render Functions ---
-
-        function createPromptCard(prompt, index, isPremium = false) {
-            const safeContent = prompt.content.replace(/`/g, "\\`").replace(/'/g, "\\'");
-            const prefix = isPremium ? 'prem-prompt' : 'prompt';
-            
-            return `
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 hover:border-purple-500/50 hover:shadow-[0_0_30px_rgba(168,85,247,0.15)] hover:-translate-y-1 transition-all duration-300 group relative flex flex-col h-full">
-                <div class="flex justify-between items-start mb-4">
-                    <h3 class="text-xl font-bold text-white group-hover:text-purple-300 transition-colors">${prompt.title}</h3>
-                    <span class="px-3 py-1 bg-slate-800 rounded-full text-xs text-slate-400 border border-slate-700 whitespace-nowrap ml-2">
-                        ${prompt.category}
-                    </span>
-                </div>
-                
-                <div id="${prefix}-content-${index}" class="relative bg-slate-950 p-4 rounded-xl border border-slate-800 font-mono text-sm text-slate-300 leading-relaxed mb-4 overflow-hidden transition-all duration-500 ease-in-out max-h-[140px]">
-                    <p class="whitespace-pre-line">${prompt.content}</p>
-                    <div id="${prefix}-fade-${index}" class="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-slate-950 via-slate-950/90 to-transparent pointer-events-none"></div>
-                </div>
-                
-                <div class="mt-auto flex items-center justify-between pt-2">
-                    <button onclick="togglePrompt(${index}, ${isPremium})" class="text-purple-400 text-sm font-medium hover:text-purple-300 transition-colors flex items-center gap-1 focus:outline-none">
-                        <span id="${prefix}-btn-text-${index}">Expand Prompt</span> 
-                        <i data-lucide="chevron-down" class="w-4 h-4"></i>
-                    </button>
-
-                    <button id="${prefix}-copy-btn-${index}" onclick="copyToClipboard(\`${safeContent}\`, '${prefix}-copy-btn-${index}')" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 border bg-slate-800 border-slate-700 text-slate-400 hover:bg-purple-600 hover:text-white hover:border-purple-500">
-                        <i data-lucide="copy" class="w-3.5 h-3.5"></i> Copy
-                    </button>
-                </div>
-            </div>`;
-        }
+        // --- RENDERERS ---
 
         function renderDemoPrompts() {
             const container = document.getElementById('demo-container');
             let html = '';
             demoPrompts.forEach((prompt, index) => {
-                html += createPromptCard(prompt, index, false);
+                const safeContent = prompt.content.replace(/`/g, "\\`").replace(/'/g, "\\'");
+                html += `
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 hover:border-purple-500/50 hover:shadow-[0_0_30px_rgba(168,85,247,0.15)] hover:-translate-y-1 transition-all duration-300 group relative flex flex-col h-full">
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="text-xl font-bold text-white group-hover:text-purple-300 transition-colors">${prompt.title}</h3>
+                        <span class="px-3 py-1 bg-slate-800 rounded-full text-xs text-slate-400 border border-slate-700 whitespace-nowrap ml-2">${prompt.category}</span>
+                    </div>
+                    <div id="prompt-content-${index}" class="relative bg-slate-950 p-4 rounded-xl border border-slate-800 font-mono text-sm text-slate-300 leading-relaxed mb-4 overflow-hidden transition-all duration-500 ease-in-out max-h-[140px]">
+                        <p class="whitespace-pre-line">${prompt.content}</p>
+                        <div id="prompt-fade-${index}" class="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-slate-950 via-slate-950/90 to-transparent pointer-events-none"></div>
+                    </div>
+                    <div class="mt-auto flex items-center justify-between pt-2">
+                        <button onclick="togglePrompt(${index})" class="text-purple-400 text-sm font-medium hover:text-purple-300 transition-colors flex items-center gap-1 focus:outline-none">
+                            <span id="prompt-btn-text-${index}">Expand Prompt</span> <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                        </button>
+                        <button id="copy-btn-${index}" onclick="copyToClipboard(\`${safeContent}\`, 'copy-btn-${index}')" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 border bg-slate-800 border-slate-700 text-slate-400 hover:bg-purple-600 hover:text-white hover:border-purple-500">
+                            <i data-lucide="copy" class="w-3.5 h-3.5"></i> Copy
+                        </button>
+                    </div>
+                </div>`;
             });
             container.innerHTML = html;
         }
@@ -664,51 +508,24 @@ Tell me your problem.`
         function renderLockedPreview() {
             const container = document.getElementById('locked-preview-container');
             let html = '';
-            lockedTitles.forEach((prompt, index) => {
+            lockedTitles.forEach((prompt) => {
                 html += `
                 <div class="relative group overflow-hidden rounded-2xl">
-                    <!-- Blur Overlay -->
                     <div class="absolute inset-0 bg-slate-950/60 backdrop-blur-[6px] z-10 flex flex-col items-center justify-center p-6 text-center transition-all duration-300 group-hover:bg-slate-950/75 group-hover:backdrop-blur-[8px]">
-                        <div class="bg-purple-500/10 p-3 rounded-full mb-3 group-hover:scale-110 transition-transform duration-300">
-                            <i data-lucide="lock" class="h-6 w-6 text-purple-400"></i>
-                        </div>
+                        <div class="bg-purple-500/10 p-3 rounded-full mb-3 group-hover:scale-110 transition-transform duration-300"><i data-lucide="lock" class="h-6 w-6 text-purple-400"></i></div>
                         <p class="text-white font-semibold mb-2 translate-y-2 group-hover:translate-y-0 transition-transform duration-300">Subscriber Only</p>
-                        <button onclick="scrollToSubscribe()" class="text-xs bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded-lg transition-all opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 duration-300 shadow-lg shadow-purple-500/20">
-                            Unlock for ₹9
-                        </button>
+                        <button onclick="scrollToSubscribe()" class="text-xs bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded-lg transition-all opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 duration-300 shadow-lg shadow-purple-500/20">Unlock for ₹39</button>
                     </div>
-                    <!-- Card Preview -->
                     <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 h-full flex flex-col opacity-40 group-hover:opacity-30 transition-opacity">
                         <div class="flex justify-between items-start mb-4">
                             <h3 class="text-xl font-bold text-white">${prompt.title}</h3>
-                            <span class="px-3 py-1 bg-slate-800 rounded-full text-xs text-slate-400 border border-slate-700">
-                                ${prompt.category}
-                            </span>
+                            <span class="px-3 py-1 bg-slate-800 rounded-full text-xs text-slate-400 border border-slate-700">${prompt.category}</span>
                         </div>
-                        <div class="flex-grow space-y-2">
-                            <div class="h-4 bg-slate-800 rounded w-3/4"></div>
-                            <div class="h-4 bg-slate-800 rounded w-full"></div>
-                            <div class="h-4 bg-slate-800 rounded w-5/6"></div>
-                            <div class="h-4 bg-slate-800 rounded w-4/5"></div>
-                        </div>
+                        <div class="flex-grow space-y-2"><div class="h-4 bg-slate-800 rounded w-3/4"></div><div class="h-4 bg-slate-800 rounded w-full"></div><div class="h-4 bg-slate-800 rounded w-5/6"></div><div class="h-4 bg-slate-800 rounded w-4/5"></div></div>
                     </div>
                 </div>`;
             });
             container.innerHTML = html;
-        }
-
-        function renderPremiumPrompts() {
-            const container = document.getElementById('premium-container');
-            let html = '';
-            // Concatenate demo prompts (optional, if you want them in dashboard too) + premium prompts
-            const allPrompts = [...demoPrompts, ...premiumPrompts];
-            
-            allPrompts.forEach((prompt, index) => {
-                html += createPromptCard(prompt, index, true);
-            });
-            container.innerHTML = html;
-            // Re-init icons for new content
-            lucide.createIcons();
         }
 
         function renderFAQs() {
@@ -718,31 +535,162 @@ Tell me your problem.`
                 html += `
                 <div class="border-b border-slate-800 last:border-none">
                     <button onclick="toggleFAQ(${index})" class="w-full py-6 flex items-center justify-between text-left focus:outline-none group">
-                        <span id="faq-question-${index}" class="text-lg font-medium transition-colors text-slate-200 group-hover:text-purple-300">
-                            ${faq.question}
-                        </span>
-                        <span id="faq-icon-wrapper-${index}" class="ml-6 flex-shrink-0 transition-transform duration-300">
-                            <i data-lucide="plus" class="w-5 h-5 text-slate-400 group-hover:text-purple-400"></i>
-                        </span>
+                        <span id="faq-question-${index}" class="text-lg font-medium transition-colors text-slate-200 group-hover:text-purple-300">${faq.question}</span>
+                        <span id="faq-icon-wrapper-${index}" class="ml-6 flex-shrink-0 transition-transform duration-300"><i data-lucide="plus" class="w-5 h-5 text-slate-400 group-hover:text-purple-400"></i></span>
                     </button>
-                    <div id="faq-content-${index}" class="overflow-hidden transition-all duration-300 ease-in-out max-h-0 opacity-0">
-                        <p class="text-slate-400 leading-relaxed pr-8">
-                            ${faq.answer}
-                        </p>
-                    </div>
+                    <div id="faq-content-${index}" class="overflow-hidden transition-all duration-300 ease-in-out max-h-0 opacity-0"><p class="text-slate-400 leading-relaxed pr-8">${faq.answer}</p></div>
                 </div>`;
             });
             container.innerHTML = html;
         }
 
-        // --- Init ---
+        function renderLibraryCategories() {
+            const nav = document.getElementById('category-nav');
+            let html = '';
+            libraryCategories.forEach(cat => {
+                html += `<a href="#cat-${cat.id}" class="block px-4 py-3 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-purple-400 transition-all flex items-center gap-3 group"><i data-lucide="${cat.icon}" class="w-4 h-4 group-hover:scale-110 transition-transform"></i> ${cat.name}</a>`;
+            });
+            nav.innerHTML = html;
+        }
+
+        function renderLibraryPrompts() {
+            const feed = document.getElementById('prompts-feed');
+            let html = '';
+            libraryCategories.forEach(cat => {
+                const catPrompts = libraryPrompts.filter(p => p.categoryId === cat.id);
+                html += `<section id="cat-${cat.id}" class="scroll-mt-32"><div class="flex items-center gap-3 mb-6 border-b border-slate-800 pb-4"><div class="p-2 bg-purple-500/10 rounded-lg"><i data-lucide="${cat.icon}" class="w-6 h-6 text-purple-400"></i></div><h2 class="text-3xl font-bold text-white">${cat.name}</h2><span class="ml-auto bg-slate-800 text-xs px-2 py-1 rounded text-slate-400">${catPrompts.length} Prompts</span></div><div class="grid gap-8">`;
+                catPrompts.forEach((prompt) => {
+                    const safeContent = prompt.content.replace(/`/g, "\\`").replace(/'/g, "\\'");
+                    html += `
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden hover:border-purple-500/30 transition-all duration-300 shadow-lg">
+                        <div class="p-6 border-b border-slate-800 bg-slate-900 relative">
+                            <div class="absolute top-0 right-0 p-4 opacity-10"><i data-lucide="sparkles" class="w-24 h-24"></i></div>
+                            <h3 class="text-xl font-bold text-white mb-2 relative z-10">${prompt.title}</h3>
+                            <p class="text-slate-400 text-sm relative z-10">${prompt.description}</p>
+                        </div>
+                        <div class="bg-slate-950 p-6"><div class="relative"><div class="h-64 overflow-y-auto custom-scrollbar prompt-content text-xs font-mono text-slate-300 leading-relaxed p-4 bg-black/20 rounded-xl border border-slate-800/50">${prompt.content}</div><div class="absolute bottom-4 right-6 pointer-events-none"><span class="bg-slate-800/90 backdrop-blur text-xs text-slate-400 px-2 py-1 rounded border border-slate-700">${prompt.content.split('\n').length} Lines</span></div></div></div>
+                        <div class="p-4 bg-slate-900 border-t border-slate-800 flex justify-between items-center">
+                            <div class="text-xs text-slate-500 flex items-center gap-1"><i data-lucide="shield-check" class="w-3 h-3 text-green-500"></i> Verified Prompt</div>
+                            <button id="copy-lib-${prompt.id}" onclick="copyToClipboard(\`${safeContent}\`, 'copy-lib-${prompt.id}')" class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold bg-purple-600 hover:bg-purple-500 text-white transition-all shadow-lg shadow-purple-900/20 active:scale-95"><i data-lucide="copy" class="w-4 h-4"></i> Copy</button>
+                        </div>
+                    </div>`;
+                });
+                html += `</div></section>`;
+            });
+            feed.innerHTML = html;
+        }
+
+        // --- UTILITIES ---
+
+        function downloadAsMarkdown() {
+            let mdContent = "# Magical Prompts Library\n\nGenerated by PromptMagic\n\n---\n\n";
+            libraryPrompts.forEach(p => {
+                mdContent += `## ${p.title}\n**Category:** ${libraryCategories.find(c => c.id === p.categoryId).name}\n\n\`\`\`\n${p.content}\n\`\`\`\n\n---\n\n`;
+            });
+            const blob = new Blob([mdContent], { type: 'text/markdown' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = 'PromptMagic_Library.md';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        }
+
+        function downloadAsPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            let y = 20;
+            const pageHeight = doc.internal.pageSize.height;
+            const margin = 20;
+            
+            doc.setFontSize(22); doc.text("PromptMagic Library", margin, y); y += 15;
+            doc.setFontSize(10); doc.text("Complete Collection", margin, y); y += 20;
+
+            libraryPrompts.forEach((p, index) => {
+                if (y > pageHeight - 40) { doc.addPage(); y = 20; }
+                doc.setFontSize(16); doc.setFont("helvetica", "bold"); doc.text(`${index + 1}. ${p.title}`, margin, y); y += 10;
+                doc.setFontSize(10); doc.setFont("helvetica", "normal"); doc.setTextColor(100); doc.text(p.description, margin, y); doc.setTextColor(0); y += 10;
+                const lines = doc.splitTextToSize(p.content, 170);
+                lines.forEach(line => {
+                    if (y > pageHeight - 20) { doc.addPage(); y = 20; }
+                    doc.setFont("courier", "normal"); doc.setFontSize(9); doc.text(line, margin, y); y += 5;
+                });
+                y += 15;
+            });
+            doc.save("PromptMagic_Library.pdf");
+        }
+
+        function togglePrompt(id) {
+            const contentDiv = document.getElementById(`prompt-content-${id}`);
+            const fadeDiv = document.getElementById(`prompt-fade-${id}`);
+            const btnText = document.getElementById(`prompt-btn-text-${id}`);
+            const isExpanded = contentDiv.classList.contains('max-h-[600px]');
+            if (isExpanded) {
+                contentDiv.classList.remove('max-h-[600px]', 'overflow-y-auto', 'custom-scrollbar');
+                contentDiv.classList.add('max-h-[140px]', 'overflow-hidden');
+                fadeDiv.style.display = 'block';
+                btnText.innerText = "Expand Prompt";
+            } else {
+                contentDiv.classList.remove('max-h-[140px]', 'overflow-hidden');
+                contentDiv.classList.add('max-h-[600px]', 'overflow-y-auto', 'custom-scrollbar');
+                fadeDiv.style.display = 'none';
+                btnText.innerText = "Show Less";
+            }
+        }
+        
+        function toggleFAQ(id) {
+            const content = document.getElementById(`faq-content-${id}`);
+            const questionText = document.getElementById(`faq-question-${id}`);
+            if (content.classList.contains('max-h-0')) {
+                content.classList.remove('max-h-0', 'opacity-0'); content.classList.add('max-h-96', 'opacity-100', 'mb-6');
+                document.getElementById(`faq-icon-wrapper-${id}`).classList.add('rotate-180');
+                questionText.classList.replace('text-slate-200', 'text-purple-400');
+                document.getElementById(`faq-icon-wrapper-${id}`).innerHTML = `<i data-lucide="minus" class="w-5 h-5 text-purple-400"></i>`;
+            } else {
+                content.classList.add('max-h-0', 'opacity-0'); content.classList.remove('max-h-96', 'opacity-100', 'mb-6');
+                document.getElementById(`faq-icon-wrapper-${id}`).classList.remove('rotate-180');
+                questionText.classList.replace('text-purple-400', 'text-slate-200');
+                document.getElementById(`faq-icon-wrapper-${id}`).innerHTML = `<i data-lucide="plus" class="w-5 h-5 text-slate-400 group-hover:text-purple-400"></i>`;
+            }
+            lucide.createIcons();
+        }
+
+        function copyToClipboard(text, btnId) {
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text).then(() => showCopiedState(btnId));
+            } else {
+                const textArea = document.createElement("textarea");
+                textArea.value = text;
+                textArea.style.position = "fixed";
+                textArea.style.left = "-9999px";
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                try { document.execCommand('copy'); showCopiedState(btnId); } catch (err) {}
+                document.body.removeChild(textArea);
+            }
+        }
+
+        function showCopiedState(btnId) {
+            const btn = document.getElementById(btnId);
+            const originalHtml = btn.innerHTML;
+            const originalClasses = btn.className;
+            btn.className = "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold bg-green-500 text-white transition-all shadow-lg";
+            btn.innerHTML = `<i data-lucide="check" class="w-4 h-4"></i> Copied!`;
+            lucide.createIcons();
+            setTimeout(() => { btn.className = originalClasses; btn.innerHTML = originalHtml; lucide.createIcons(); }, 2000);
+        }
+
+        // --- INIT ---
         document.addEventListener('DOMContentLoaded', () => {
             renderDemoPrompts();
             renderLockedPreview();
             renderFAQs();
             lucide.createIcons();
         });
-
     </script>
 </body>
 </html>
